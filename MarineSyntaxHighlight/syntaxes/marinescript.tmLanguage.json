@@ -1,0 +1,120 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "marinescript",
+	"patterns": [
+		{"include": "#func_decl"},
+		{"include": "#keywords"},
+		{"include": "#func_call"},
+		{"include": "#constants"},
+		{"include": "#identifier"}
+	],
+	"repository": {
+		"func_decl":{
+			"patterns": [{
+				"match": "(fun)\\s+([a-z_]+)\\((.*)\\)",
+				"captures": {
+					"1": {"patterns": [{"include":"#keywords"}]},
+					"2": {"patterns": [{"include":"#func_name"}]},
+					"3": {"patterns": [{"include":"#func_param"}]}
+				}
+			}]
+		},
+		"func_param":{
+			"patterns": [{
+				"name": "variable.parameter.marinescript",
+				"match": "[a-z_]+"
+			}]
+		},
+		"identifier":{
+			"patterns": [{
+				"name": "variable.other.marinescript",
+				"match": "[a-z_]+"
+			}]
+		},
+		"func_call":{
+			"patterns": [
+				{
+					"match": "([a-z_]+)\\(\\)",
+					"captures": {
+						"1": {"patterns": [{"include":"#func_name"}]}
+					}
+				},
+				{
+					"match": "([a-z_]+)\\((.+)\\)",
+					"captures": {
+						"1": {"patterns": [{"include":"#func_name"}]},
+						"2": {"patterns": [{"include":"#func_param"}]}
+					}
+				}
+			]
+		},
+		"func_name":{
+			"patterns": [{
+				"name":"entity.name.function.marinescript",
+				"match":"[a-z_]+"
+			}]
+		},
+		"constants":{
+			"patterns": [{
+				"name":"constant.numeric.marinescript",
+				"match":"[0-9]+"
+			}]
+		},
+		"keywords":{
+			"patterns": [
+				{"include": "#fun_keyword"},
+				{"include": "#end_keyword"},
+				{"include": "#let_keyword"},
+				{"include": "#for_keyword"},
+				{"include": "#if_keyword"},
+				{"include": "#else_keyword"},
+				{"include": "#ret_keyword"}
+			],
+			"repository":{
+				"fun_keyword": {
+					"patterns": [{
+						"name": "keyword.other.marinescript",
+						"match": "fun"
+					}]
+				},
+				"end_keyword": {
+					"patterns": [{
+						"name": "keyword.other.marinescript",
+						"match": "end"
+					}]
+				},
+				"let_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "let"
+					}]
+				},
+				"for_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "for"
+					}]
+				},
+				"if_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "if"
+					}]
+				},
+				"else_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "else"
+					}]
+				},
+				"ret_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "ret"
+					}]
+				}
+			}
+		}
+	},
+	"scopeName": "source.mrn"
+}

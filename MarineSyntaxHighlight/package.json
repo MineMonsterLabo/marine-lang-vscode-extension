@@ -1,0 +1,25 @@
+{
+    "name": "marinelangext",
+    "displayName": "MarineLangExt",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.50.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "marinescript",
+            "aliases": ["marinescript", "marinescript"],
+            "extensions": [".mrn"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "marinescript",
+            "scopeName": "source.mrn",
+            "path": "./syntaxes/marinescript.tmLanguage.json"
+        }]
+    }
+}

@@ -1,0 +1,20 @@
+fun main() 
+    let arr = [2,4,8]
+    let sum = 0
+    for i = 0, arr.length - 1, 1{
+    	print(arr[i].to_string())
+        sum = sum + arr[i]
+    }
+    print(sum.to_string())
+end
+
+fun sum(min, max)
+    ret 
+        if min == max 
+        {
+            min
+        } 
+        else {
+	        min + sum(min + 1, max)
+        }
+end
