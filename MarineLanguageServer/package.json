@@ -15,7 +15,15 @@
 				"id": "marinescript",
 				"extensions": [
 					".mrn"
-				]
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "marinescript",
+				"scopeName": "source.mrn",
+				"path": "./syntaxes/marinescript.tmLanguage.json"
 			}
 		]
 	},
