@@ -1,0 +1,39 @@
+{
+	"name": "lsp-marine",
+	"license": "MIT",
+	"version": "1.0.0",
+	"engines": {
+		"vscode": "^1.43.0"
+	},
+	"activationEvents": [
+		"onLanguage:marinescript"
+	],
+	"main": "./client/out/extension.js",
+	"contributes": {
+		"languages": [
+			{
+				"id": "marinescript",
+				"extensions": [
+					".mrn"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "marinescript",
+				"scopeName": "source.mrn",
+				"path": "./syntaxes/marinescript.tmLanguage.json"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./client",
+		"lint": "eslint . --ext .ts,.tsx",
+		"watch": "tsc -watch -p ./client"
+	},
+	"devDependencies": {
+		"typescript": "^4.1.3"
+	}
+}
