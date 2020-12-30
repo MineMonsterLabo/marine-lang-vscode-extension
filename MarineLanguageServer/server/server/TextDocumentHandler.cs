@@ -82,17 +82,26 @@ namespace SampleServer
 
             if (result.IsError)
             {
-                var errorPosition = result.Error.ErrorPosition;
                 return
                     new Container<Diagnostic>(
                         new Diagnostic
                         {
-                            Range = new Range(new Position(), new Position(errorPosition.line - 1, errorPosition.column)),
+                            Range = ToRange(result.Error.ErrorRangePosition),
                             Message = result.Error.FullErrorMessage,
                         }
                     );
             }
             return new Container<Diagnostic>();
+        }
+
+        private Range ToRange(MarineLang.Models.RangePosition range)
+        {
+            return new Range(ToPosition(range.Start), ToPosition(range.End));
+        }
+
+        private Position ToPosition(MarineLang.Models.Position position)
+        {
+            return new Position(position.line - 1, position.column-1);
         }
     }
 }
