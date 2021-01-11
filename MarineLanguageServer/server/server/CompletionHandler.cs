@@ -36,6 +36,7 @@ namespace server
                     tasks.Add(Task.Run(() => CreateFunctions(result.Value)));
 
                     tasks.Add(Task.Run(() => CreateFunctionParamaters(currentFuncDefAst)));
+                    tasks.Add(Task.Run(() => CreateVariables(currentFuncDefAst, request.Position)));
 
                     tasks.Add(Task.Run(() => CreateKeywords()));
                 }
@@ -57,6 +58,8 @@ namespace server
                 CreateCompletionItem("let", CompletionItemKind.Keyword),
                 CreateCompletionItem("ret", CompletionItemKind.Keyword),
                 CreateCompletionItem("yield", CompletionItemKind.Keyword),
+                CreateCompletionItem("true", CompletionItemKind.Keyword),
+                CreateCompletionItem("false", CompletionItemKind.Keyword),
             };
         }
 
@@ -88,7 +91,12 @@ namespace server
 
         private IEnumerable<CompletionItem> CreateFunctionParamaters(FuncDefinitionAst ast)
         {
-            return ast.args.Select(e => CreateCompletionItem(e.VarName, CompletionItemKind.Field, $"paramater {e.VarName}"));
+            return ast.args.Select(e => CreateCompletionItem(e.VarName, CompletionItemKind.Variable, $"paramater {e.VarName}"));
+        }
+
+        private IEnumerable<CompletionItem> CreateVariables(FuncDefinitionAst ast, Position position)
+        {
+            return ast.LookUp<AssignmentVariableAst>().Select(e => CreateCompletionItem(e.varName, CompletionItemKind.Variable, $"local variable {e.varName}"));
         }
 
         private CompletionItem CreateCompletionItem(string label, CompletionItemKind kind, string detail = null)
