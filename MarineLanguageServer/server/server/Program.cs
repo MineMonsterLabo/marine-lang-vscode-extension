@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Server;
 using Serilog;
+using server;
 
 namespace SampleServer
 {
@@ -37,7 +38,8 @@ namespace SampleServer
                                 .AddLanguageProtocolLogging()
                                 .SetMinimumLevel(LogLevel.Debug)
                         )
-                        .WithHandler<TextDocumentHandler>()
+                       .WithHandler<CompletionHandler>()
+                       .WithHandler<TextDocumentHandler>()
                        .WithServices(x => x.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace)))
                        .WithServices(
                             services => {
