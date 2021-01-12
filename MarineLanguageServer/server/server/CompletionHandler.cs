@@ -53,35 +53,30 @@ namespace server
 
         private IEnumerable<CompletionItem> CreateKeywords()
         {
-            return new[]
-            {
-                CreateCompletionItem("let", CompletionItemKind.Keyword),
-                CreateCompletionItem("ret", CompletionItemKind.Keyword),
-                CreateCompletionItem("yield", CompletionItemKind.Keyword),
-                CreateCompletionItem("true", CompletionItemKind.Keyword),
-                CreateCompletionItem("false", CompletionItemKind.Keyword),
-            };
+            yield return CreateCompletionItem("let", CompletionItemKind.Keyword);
+            yield return CreateCompletionItem("ret", CompletionItemKind.Keyword);
+            yield return CreateCompletionItem("yield", CompletionItemKind.Keyword);
+            yield return CreateCompletionItem("true", CompletionItemKind.Keyword);
+            yield return CreateCompletionItem("false", CompletionItemKind.Keyword);
         }
 
         private IEnumerable<CompletionItem> CreateSnippets(FuncDefinitionAst ast)
         {
-            List<CompletionItem> items = new List<CompletionItem>();
             if (ast != null)
             {
-                items.Add(CreateSnippetItem("letc", "let ${1:foo} = $2"));
-                items.Add(CreateSnippetItem("if", "if ($1) {\n\t$2\n}"));
-                items.Add(CreateSnippetItem("else", "else {\n\t$1\n}"));
-                items.Add(CreateSnippetItem("elseif", "else if ($1) {\n\t$2\n}"));
-                items.Add(CreateSnippetItem("while", "while ($1) {\n\t$2\n}"));
-                items.Add(CreateSnippetItem("for", "for ${1:i} = $2, $3, $4 {\n\t$5\n}"));
+                yield return CreateSnippetItem("letc", "let ${1:foo} = $2");
+                yield return CreateSnippetItem("if", "if ($1) {\n\t$2\n}");
+                yield return CreateSnippetItem("else", "else {\n\t$1\n}");
+                yield return CreateSnippetItem("elseif", "else if ($1) {\n\t$2\n}");
+                yield return CreateSnippetItem("while", "while ($1) {\n\t$2\n}");
+                yield return CreateSnippetItem("for", "for ${1:i} = $2, $3, $4 {\n\t$5\n}");
+                yield return CreateSnippetItem("letac", "let ${1:foo} = {|$2| $3}");
             }
             else
             {
-                items.Add(CreateSnippetItem("fun", "fun ${1:foo}()\n\t$2\nend"));
-                items.Add(CreateSnippetItem("fmain", "fun main()\n\t$2\nend"));
+                yield return CreateSnippetItem("fun", "fun ${1:foo}()\n\t$2\nend");
+                yield return CreateSnippetItem("fmain", "fun main()\n\t$2\nend");
             }
-
-            return items;
         }
 
         private IEnumerable<CompletionItem> CreateFunctions(ProgramAst ast)
@@ -96,7 +91,7 @@ namespace server
 
         private IEnumerable<CompletionItem> CreateVariables(FuncDefinitionAst ast, Position position)
         {
-            return ast.LookUp<AssignmentVariableAst>().Select(e => CreateCompletionItem(e.varName, CompletionItemKind.Variable, $"local variable {e.varName}"));
+            return ast.LookUp<AssignmentVariableAst>().Select(e => CreateCompletionItem(e.variableAst.VarName, CompletionItemKind.Variable, $"local variable {e.variableAst.VarName}"));
         }
 
         private CompletionItem CreateCompletionItem(string label, CompletionItemKind kind, string detail = null)
