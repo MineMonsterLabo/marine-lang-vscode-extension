@@ -96,7 +96,7 @@ namespace server
 
         private IEnumerable<CompletionItem> CreateVariables(FuncDefinitionAst ast, Position position)
         {
-            return ast.LookUp<AssignmentVariableAst>().Select(e => CreateCompletionItem(e.varName, CompletionItemKind.Variable, $"local variable {e.varName}"));
+            return ast.LookUp<AssignmentVariableAst>().Select(e => CreateCompletionItem(e.variableAst.VarName, CompletionItemKind.Variable, $"local variable {e.variableAst.VarName}"));
         }
 
         private CompletionItem CreateCompletionItem(string label, CompletionItemKind kind, string detail = null)
