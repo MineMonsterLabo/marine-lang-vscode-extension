@@ -75,7 +75,6 @@ namespace server
             else
             {
                 yield return CreateSnippetItem("fun", "fun ${1:foo}()\n\t$2\nend");
-                yield return CreateSnippetItem("fmain", "fun main()\n\t$2\nend");
             }
         }
 
