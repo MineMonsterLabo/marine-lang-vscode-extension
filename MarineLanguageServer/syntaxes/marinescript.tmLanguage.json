@@ -6,9 +6,24 @@
 		{"include": "#keywords"},
 		{"include": "#func_call"},
 		{"include": "#constants"},
-		{"include": "#identifier"}
+		{"include": "#identifier"},
+		{"include": "#line_comment"},
+		{"include": "#range_comment"}
 	],
 	"repository": {
+		"line_comment":{
+			"patterns": [{
+				"name": "comment.marinescript",
+				"match": "//.*"
+			}]
+		},
+		"range_comment":{
+			"patterns": [{
+				"name": "comment.marinescript",
+				"begin": "/\\*.*",
+				"end": "\\*/"
+			}]
+		},
 		"func_decl":{
 			"patterns": [{
 				"match": "(fun)\\s+([a-z_]+)\\((.*)\\)",
