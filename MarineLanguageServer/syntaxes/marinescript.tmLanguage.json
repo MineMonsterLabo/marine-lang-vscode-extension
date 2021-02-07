@@ -8,8 +8,10 @@
 		{"include": "#control_keyword"},
 		{"include": "#func_decl"},
 		{"include": "#func_call"},
+		{"include": "#bool"},
+		{"include": "#string"},
 		{"include": "#identifier"},
-		{"include": "#constants"}
+		{"include": "#number"}
 	],
 	"repository": {
 		"line_comment":{
@@ -27,7 +29,7 @@
 		},
 		"control_keyword":{
 			"name": "keyword.control.marinescript",
-			"match": "let|for|if|else|ret"
+			"match": "let|for|while|yield|if|else|ret"
 		},
 		"func_decl":{
 			"match": "(fun)\\s+([a-z_]+)",
@@ -50,9 +52,18 @@
 			"name":"entity.name.function.marinescript",
 			"match":"[a-z]([a-z_]|[0-9])+"
 		},
-		"constants":{
+		"number":{
 			"name":"constant.numeric.marinescript",
 			"match":"\\b[0-9]+\\b"
+		},
+		"bool":{
+			"name":"keyword.other.marinescript",
+			"match":"\\b(true|false)\\b"
+		},
+		"string":{
+			"name":"string",
+			"begin":"\"",
+			"end":"\""
 		}
 	},
 	"scopeName": "source.mrn"

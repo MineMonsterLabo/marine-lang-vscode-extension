@@ -39,6 +39,19 @@ fun main(g)
             }
         } 
     ]).value.invoke([5]).value
+
+    let total = 0
+    let max = 100
+    let now = 0
+    while now <= max {
+        total = total + now
+        now = now + 1
+        "aaa
+abbb"
+        true
+        false
+    }
+    yield
 end
 
 fun main() /* ret wait_wait5().await.await+1 end */
