@@ -1,3 +1,11 @@
+//コメントです
+fun fuga()
+end
+/*
+aaa
+bbbbb
+aaa
+*/
 fun main() 
     let arr = [2,4,8]
     let sum = 0
@@ -8,7 +16,7 @@ fun main()
     print(sum.to_string())
 end
 
-fun sum(min, max)
+fun sum(min3, max)
     ret 
         if min == max 
         {
@@ -18,3 +26,32 @@ fun sum(min, max)
 	        min + sum(min + 1, max)
         }
 end
+
+fun main(g)
+    ret {|f| 
+        ret 
+            { |x| ret f.invoke( [{ |y| ret x.invoke([x]).value.invoke([y]).value }] ).value }
+            .invoke( [{|x| ret f.invoke( [{ |y| ret x.invoke([x]).value.invoke([y]).value }] ).value }] ).value   
+    }.invoke([
+        { |f| 
+            ret { |n| 
+                ret if n==0 {1} else {n * f.invoke([n - 1]).value } 
+            }
+        } 
+    ]).value.invoke([5]).value
+
+    let total = 0
+    let max = 100
+    let now = 0
+    while now <= max {
+        total = total + now
+        now = now + 1
+        "aaa
+abbb"
+        true
+        false
+    }
+    yield
+end
+
+fun main() /* ret wait_wait5().await.await+1 end */
