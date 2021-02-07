@@ -16,7 +16,7 @@ fun main()
     print(sum.to_string())
 end
 
-fun sum(min, max)
+fun sum(min3, max)
     ret 
         if min == max 
         {
@@ -27,7 +27,7 @@ fun sum(min, max)
         }
 end
 
-fun main()
+fun main(g)
     ret {|f| 
         ret 
             { |x| ret f.invoke( [{ |y| ret x.invoke([x]).value.invoke([y]).value }] ).value }

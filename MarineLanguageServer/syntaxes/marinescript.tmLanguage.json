@@ -2,133 +2,57 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "marinescript",
 	"patterns": [
-		{"include": "#func_decl"},
-		{"include": "#keywords"},
-		{"include": "#func_call"},
-		{"include": "#constants"},
-		{"include": "#identifier"},
 		{"include": "#line_comment"},
-		{"include": "#range_comment"}
+		{"include": "#range_comment"},
+		{"include": "#other_keyword"},
+		{"include": "#control_keyword"},
+		{"include": "#func_decl"},
+		{"include": "#func_call"},
+		{"include": "#identifier"},
+		{"include": "#constants"}
 	],
 	"repository": {
 		"line_comment":{
-			"patterns": [{
-				"name": "comment.marinescript",
-				"match": "//.*"
-			}]
+			"name": "comment.marinescript",
+			"match": "//.*"
 		},
 		"range_comment":{
-			"patterns": [{
-				"name": "comment.marinescript",
-				"begin": "/\\*.*",
-				"end": "\\*/"
-			}]
+			"name": "comment.marinescript",
+			"begin": "/\\*",
+			"end": "\\*/"
+		},
+		"other_keyword": {
+			"name": "keyword.other.marinescript",
+			"match": "fun|end"
+		},
+		"control_keyword":{
+			"name": "keyword.control.marinescript",
+			"match": "let|for|if|else|ret"
 		},
 		"func_decl":{
-			"patterns": [{
-				"match": "(fun)\\s+([a-z_]+)\\((.*)\\)",
-				"captures": {
-					"1": {"patterns": [{"include":"#keywords"}]},
-					"2": {"patterns": [{"include":"#func_name"}]},
-					"3": {"patterns": [{"include":"#func_param"}]}
-				}
-			}]
-		},
-		"func_param":{
-			"patterns": [{
-				"name": "variable.parameter.marinescript",
-				"match": "[a-z_]+"
-			}]
+			"match": "(fun)\\s+([a-z_]+)",
+			"captures": {
+				"1": {"patterns": [{"include":"#keywords"}]},
+				"2": {"patterns": [{"include":"#func_name"}]}
+			}
 		},
 		"identifier":{
-			"patterns": [{
-				"name": "variable.other.marinescript",
-				"match": "[a-z_]+"
-			}]
+			"name": "variable.other.marinescript",
+			"match": "[a-z][a-z_0-9]*"
 		},
 		"func_call":{
-			"patterns": [
-				{
-					"match": "([a-z_]+)\\(\\)",
-					"captures": {
-						"1": {"patterns": [{"include":"#func_name"}]}
-					}
-				},
-				{
-					"match": "([a-z_]+)\\((.+)\\)",
-					"captures": {
-						"1": {"patterns": [{"include":"#func_name"}]},
-						"2": {"patterns": [{"include":"#func_param"}]}
-					}
-				}
-			]
+			"match": "([a-z]([a-z_]|[0-9])*)\\(",
+			"captures": {
+				"1": {"patterns": [{"include":"#func_name"}]}
+			}
 		},
 		"func_name":{
-			"patterns": [{
-				"name":"entity.name.function.marinescript",
-				"match":"[a-z_]+"
-			}]
+			"name":"entity.name.function.marinescript",
+			"match":"[a-z]([a-z_]|[0-9])+"
 		},
 		"constants":{
-			"patterns": [{
-				"name":"constant.numeric.marinescript",
-				"match":"[0-9]+"
-			}]
-		},
-		"keywords":{
-			"patterns": [
-				{"include": "#fun_keyword"},
-				{"include": "#end_keyword"},
-				{"include": "#let_keyword"},
-				{"include": "#for_keyword"},
-				{"include": "#if_keyword"},
-				{"include": "#else_keyword"},
-				{"include": "#ret_keyword"}
-			],
-			"repository":{
-				"fun_keyword": {
-					"patterns": [{
-						"name": "keyword.other.marinescript",
-						"match": "fun"
-					}]
-				},
-				"end_keyword": {
-					"patterns": [{
-						"name": "keyword.other.marinescript",
-						"match": "end"
-					}]
-				},
-				"let_keyword": {
-					"patterns": [{
-						"name": "keyword.control.marinescript",
-						"match": "let"
-					}]
-				},
-				"for_keyword": {
-					"patterns": [{
-						"name": "keyword.control.marinescript",
-						"match": "for"
-					}]
-				},
-				"if_keyword": {
-					"patterns": [{
-						"name": "keyword.control.marinescript",
-						"match": "if"
-					}]
-				},
-				"else_keyword": {
-					"patterns": [{
-						"name": "keyword.control.marinescript",
-						"match": "else"
-					}]
-				},
-				"ret_keyword": {
-					"patterns": [{
-						"name": "keyword.control.marinescript",
-						"match": "ret"
-					}]
-				}
-			}
+			"name":"constant.numeric.marinescript",
+			"match":"\\b[0-9]+\\b"
 		}
 	},
 	"scopeName": "source.mrn"
