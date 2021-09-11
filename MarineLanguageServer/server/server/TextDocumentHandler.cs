@@ -1,5 +1,9 @@
-﻿using System.Threading;
+﻿using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using MarineLang.LexicalAnalysis;
+using MarineLang.Models;
+using MarineLang.SyntaxAnalysis;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol;
@@ -7,8 +11,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using MarineLang.LexicalAnalysis;
-using MarineLang.SyntaxAnalysis;
+using Position = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace SampleServer
 {
@@ -16,7 +19,8 @@ namespace SampleServer
     {
         ILanguageServerFacade LanguageServerFacade { get; }
 
-        public TextDocumentHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration, ILanguageServerFacade languageServerFacade)
+        public TextDocumentHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration,
+            ILanguageServerFacade languageServerFacade)
         {
             LanguageServerFacade = languageServerFacade;
         }
@@ -33,6 +37,7 @@ namespace SampleServer
 
         public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken token)
         {
+            PublishValidateDiagnostics(request.ContentChanges.First().Text, request.TextDocument.Uri);
             return Unit.Task;
         }
 
@@ -57,11 +62,12 @@ namespace SampleServer
         {
         }
 
-        TextDocumentSaveRegistrationOptions IRegistration<TextDocumentSaveRegistrationOptions>.GetRegistrationOptions() =>
-         new TextDocumentSaveRegistrationOptions
-         {
-             IncludeText = true
-         };
+        TextDocumentSaveRegistrationOptions IRegistration<TextDocumentSaveRegistrationOptions>.
+            GetRegistrationOptions() =>
+            new TextDocumentSaveRegistrationOptions
+            {
+                IncludeText = true
+            };
 
         TextDocumentRegistrationOptions IRegistration<TextDocumentRegistrationOptions>.GetRegistrationOptions()
         {
@@ -83,25 +89,24 @@ namespace SampleServer
             if (result.IsError)
             {
                 return
-                    new Container<Diagnostic>(
-                        new Diagnostic
-                        {
-                            Range = ToRange(result.Error.ErrorRangePosition),
-                            Message = result.Error.FullErrorMessage,
-                        }
-                    );
+                    new Container<Diagnostic>(result.parseErrorInfos.Select(e => new Diagnostic
+                    {
+                        Range = ToRange(e.ErrorRangePosition),
+                        Message = e.FullErrorMessage,
+                    }));
             }
+
             return new Container<Diagnostic>();
         }
 
-        private Range ToRange(MarineLang.Models.RangePosition range)
+        private Range ToRange(RangePosition range)
         {
             return new Range(ToPosition(range.Start), ToPosition(range.End));
         }
 
         private Position ToPosition(MarineLang.Models.Position position)
         {
-            return new Position(position.line - 1, position.column-1);
+            return new Position(position.line - 1, position.column - 1);
         }
     }
 }
