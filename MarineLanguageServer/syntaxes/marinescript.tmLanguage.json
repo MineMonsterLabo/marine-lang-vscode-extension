@@ -29,7 +29,7 @@
 		},
 		"control_keyword":{
 			"name": "keyword.control.marinescript",
-			"match": "let|for|while|yield|if|else|ret"
+			"match": "let|foreach|for|while|yield|if|else|ret|await"
 		},
 		"func_decl":{
 			"match": "(fun)\\s+([a-z_]+)",
