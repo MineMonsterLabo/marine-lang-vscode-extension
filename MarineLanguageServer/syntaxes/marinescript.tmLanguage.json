@@ -25,7 +25,7 @@
 		},
 		"other_keyword": {
 			"name": "keyword.other.marinescript",
-			"match": "fun|end"
+			"match": "fun|end|\\sin"
 		},
 		"control_keyword":{
 			"name": "keyword.control.marinescript",
