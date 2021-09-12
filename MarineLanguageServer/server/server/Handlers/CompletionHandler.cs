@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MarineLang.LanguageServerImpl.Services;
 using MarineLang.LexicalAnalysis;
 using MarineLang.Models.Asts;
 using MarineLang.SyntaxAnalysis;
@@ -10,17 +11,16 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using SampleServer;
 
-namespace server
+namespace MarineLang.LanguageServerImpl.Handlers
 {
     public class CompletionHandler : ICompletionHandler
     {
         private readonly ILanguageServerFacade _languageServerFacade;
-        private readonly MarineLangWorkspaceService _workspaceService;
+        private readonly WorkspaceService _workspaceService;
 
         public CompletionHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration,
-            ILanguageServerFacade languageServerFacade, MarineLangWorkspaceService workspaceService)
+            ILanguageServerFacade languageServerFacade, WorkspaceService workspaceService)
         {
             _languageServerFacade = languageServerFacade;
             _workspaceService = workspaceService;

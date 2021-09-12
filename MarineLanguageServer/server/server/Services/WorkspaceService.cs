@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 
-namespace server
+namespace MarineLang.LanguageServerImpl.Services
 {
-    public class MarineLangWorkspaceService
+    public class WorkspaceService
     {
         private ConcurrentDictionary<string, string> _fileBuffers = new ConcurrentDictionary<string, string>();
 
