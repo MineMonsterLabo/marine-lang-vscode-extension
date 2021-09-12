@@ -14,7 +14,8 @@ namespace server
 {
     public class CompletionHandler : ICompletionHandler
     {
-        public CompletionRegistrationOptions GetRegistrationOptions()
+        public CompletionRegistrationOptions GetRegistrationOptions(CompletionCapability capability,
+            ClientCapabilities clientCapabilities)
         {
             return new CompletionRegistrationOptions();
         }
@@ -46,10 +47,6 @@ namespace server
             tasks.Add(Task.Run(() => CreateSnippets(currentFuncDefAst), cancellationToken));
 
             return new CompletionList((await Task.WhenAll(tasks)).SelectMany(e => e));
-        }
-
-        public void SetCapability(CompletionCapability capability)
-        {
         }
 
         private IEnumerable<CompletionItem> CreateKeywords()

@@ -11,6 +11,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using Position = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace SampleServer
@@ -25,9 +26,42 @@ namespace SampleServer
             LanguageServerFacade = languageServerFacade;
         }
 
-        public TextDocumentChangeRegistrationOptions GetRegistrationOptions()
+        TextDocumentChangeRegistrationOptions
+            IRegistration<TextDocumentChangeRegistrationOptions, SynchronizationCapability>.GetRegistrationOptions(
+                SynchronizationCapability capability,
+                ClientCapabilities clientCapabilities)
         {
-            return new TextDocumentChangeRegistrationOptions();
+            return new TextDocumentChangeRegistrationOptions
+            {
+                SyncKind = TextDocumentSyncKind.Full
+            };
+        }
+
+        TextDocumentOpenRegistrationOptions
+            IRegistration<TextDocumentOpenRegistrationOptions, SynchronizationCapability>.GetRegistrationOptions(
+                SynchronizationCapability capability,
+                ClientCapabilities clientCapabilities)
+        {
+            return new TextDocumentOpenRegistrationOptions();
+        }
+
+        TextDocumentCloseRegistrationOptions
+            IRegistration<TextDocumentCloseRegistrationOptions, SynchronizationCapability>.GetRegistrationOptions(
+                SynchronizationCapability capability,
+                ClientCapabilities clientCapabilities)
+        {
+            return new TextDocumentCloseRegistrationOptions();
+        }
+
+        TextDocumentSaveRegistrationOptions
+            IRegistration<TextDocumentSaveRegistrationOptions, SynchronizationCapability>.GetRegistrationOptions(
+                SynchronizationCapability capability,
+                ClientCapabilities clientCapabilities)
+        {
+            return new TextDocumentSaveRegistrationOptions
+            {
+                IncludeText = true
+            };
         }
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
@@ -58,22 +92,6 @@ namespace SampleServer
             return Unit.Task;
         }
 
-        public void SetCapability(SynchronizationCapability capability)
-        {
-        }
-
-        TextDocumentSaveRegistrationOptions IRegistration<TextDocumentSaveRegistrationOptions>.
-            GetRegistrationOptions() =>
-            new TextDocumentSaveRegistrationOptions
-            {
-                IncludeText = true
-            };
-
-        TextDocumentRegistrationOptions IRegistration<TextDocumentRegistrationOptions>.GetRegistrationOptions()
-        {
-            return new TextDocumentSaveRegistrationOptions();
-        }
-
         private void PublishValidateDiagnostics(string text, DocumentUri uri)
         {
             LanguageServerFacade.TextDocument.PublishDiagnostics(
@@ -89,7 +107,7 @@ namespace SampleServer
             if (result.IsError)
             {
                 return
-                    new Container<Diagnostic>(result.parseErrorInfos.Select(e => new Diagnostic
+                    new Container<Diagnostic>(result.parseErrorInfos.Select(e => new Diagnostic()
                     {
                         Range = ToRange(e.ErrorRangePosition),
                         Message = e.FullErrorMessage,
