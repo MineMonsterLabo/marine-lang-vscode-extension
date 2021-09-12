@@ -40,6 +40,11 @@ fun main(g)
         } 
     ]).value.invoke([5]).value
 
+    let values = [1,2,3]
+    foreach value in values {
+        sum(1 + value).await
+    }
+
     let total = 0
     let max = 100
     let now = 0

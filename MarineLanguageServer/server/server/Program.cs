@@ -18,10 +18,10 @@ namespace SampleServer
         private static async Task MainAsync(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                        .Enrich.FromLogContext()
-                        .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
-                        .MinimumLevel.Verbose()
-                        .CreateLogger();
+                .Enrich.FromLogContext()
+                .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+                .MinimumLevel.Verbose()
+                .CreateLogger();
 
             Log.Logger.Information("This only goes file...");
 
@@ -30,21 +30,23 @@ namespace SampleServer
             var server = await LanguageServer.From(
                 options =>
                     options
-                       .WithInput(Console.OpenStandardInput())
-                       .WithOutput(Console.OpenStandardOutput())
-                       .ConfigureLogging(
+                        .WithInput(Console.OpenStandardInput())
+                        .WithOutput(Console.OpenStandardOutput())
+                        .ConfigureLogging(
                             x => x
                                 .AddSerilog(Log.Logger)
                                 .AddLanguageProtocolLogging()
                                 .SetMinimumLevel(LogLevel.Debug)
                         )
-                       .WithHandler<CompletionHandler>()
-                       .WithHandler<TextDocumentHandler>()
-                       .WithServices(x => x.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace)))
-                       .WithServices(
-                            services => {
+                        .WithHandler<CompletionHandler>()
+                        .WithHandler<TextDocumentHandler>()
+                        .WithServices(x => x.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace)))
+                        .WithServices(
+                            services =>
+                            {
                                 services.AddSingleton(
-                                    provider => {
+                                    provider =>
+                                    {
                                         var loggerFactory = provider.GetService<ILoggerFactory>();
                                         var logger = loggerFactory.CreateLogger<Foo>();
 
@@ -59,10 +61,12 @@ namespace SampleServer
                                         Section = "marinescript",
                                     }
                                 );
+                                services.AddSingleton<MarineLangWorkspaceService>();
                             }
                         )
-                       .OnInitialize(
-                            async (server, request, token) => {
+                        .OnInitialize(
+                            async (server, request, token) =>
+                            {
                                 var manager = server.WorkDoneManager.For(
                                     request, new WorkDoneProgressBegin
                                     {
@@ -81,8 +85,9 @@ namespace SampleServer
                                 );
                             }
                         )
-                       .OnInitialized(
-                            async (server, request, response, token) => {
+                        .OnInitialized(
+                            async (server, request, response, token) =>
+                            {
                                 workDone.OnNext(
                                     new WorkDoneProgressReport
                                     {
@@ -101,9 +106,12 @@ namespace SampleServer
                                 workDone.OnCompleted();
                             }
                         )
-                       .OnStarted(
-                            async (languageServer, token) => {
-                                using var manager = await languageServer.WorkDoneManager.Create(new WorkDoneProgressBegin { Title = "Doing some work..." });
+                        .OnStarted(
+                            async (languageServer, token) =>
+                            {
+                                using var manager =
+                                    await languageServer.WorkDoneManager.Create(new WorkDoneProgressBegin
+                                        { Title = "Doing some work..." });
 
                                 var logger = languageServer.Services.GetService<ILogger<Foo>>();
                                 var configuration = await languageServer.Configuration.GetConfiguration(
