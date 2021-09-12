@@ -61,6 +61,7 @@ namespace SampleServer
                                         Section = "marinescript",
                                     }
                                 );
+                                services.AddSingleton<MarineLangWorkspaceService>();
                             }
                         )
                         .OnInitialize(

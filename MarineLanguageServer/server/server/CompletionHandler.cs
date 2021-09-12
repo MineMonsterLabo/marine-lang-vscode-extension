@@ -1,19 +1,31 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MarineLang.LexicalAnalysis;
 using MarineLang.Models.Asts;
 using MarineLang.SyntaxAnalysis;
+using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using SampleServer;
 
 namespace server
 {
     public class CompletionHandler : ICompletionHandler
     {
+        private readonly ILanguageServerFacade _languageServerFacade;
+        private readonly MarineLangWorkspaceService _workspaceService;
+
+        public CompletionHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration,
+            ILanguageServerFacade languageServerFacade, MarineLangWorkspaceService workspaceService)
+        {
+            _languageServerFacade = languageServerFacade;
+            _workspaceService = workspaceService;
+        }
+
         public CompletionRegistrationOptions GetRegistrationOptions(CompletionCapability capability,
             ClientCapabilities clientCapabilities)
         {
@@ -22,21 +34,25 @@ namespace server
 
         public async Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
         {
-            var text = await File.ReadAllTextAsync(request.TextDocument.Uri.Path.Remove(0, 1), cancellationToken);
+            var text = _workspaceService.GetMarineFileBuffer(request.TextDocument.Uri.Path);
             var tokens = new LexicalAnalyzer().GetTokens(text);
             var result = new SyntaxAnalyzer().Parse(tokens);
 
             var tasks = new List<Task<IEnumerable<CompletionItem>>>();
-            FuncDefinitionAst currentFuncDefAst =
-                await Task.Run(() => GetCurrentFunctionAst(result.programAst, request.Position), cancellationToken);
-            if (currentFuncDefAst != null)
+            FuncDefinitionAst currentFuncDefAst = null;
+            if (result.programAst != null)
             {
-                tasks.Add(Task.Run(() => CreateFunctions(result.programAst), cancellationToken));
+                currentFuncDefAst = await Task.Run(() => GetCurrentFunctionAst(result.programAst, request.Position),
+                    cancellationToken);
+                if (currentFuncDefAst != null)
+                {
+                    tasks.Add(Task.Run(() => CreateFunctions(result.programAst), cancellationToken));
 
-                tasks.Add(Task.Run(() => CreateFunctionParamaters(currentFuncDefAst), cancellationToken));
-                tasks.Add(Task.Run(() => CreateVariables(currentFuncDefAst, request.Position), cancellationToken));
+                    tasks.Add(Task.Run(() => CreateFunctionParamaters(currentFuncDefAst), cancellationToken));
+                    tasks.Add(Task.Run(() => CreateVariables(currentFuncDefAst, request.Position), cancellationToken));
 
-                tasks.Add(Task.Run(CreateKeywords, cancellationToken));
+                    tasks.Add(Task.Run(CreateKeywords, cancellationToken));
+                }
             }
 
             tasks.Add(Task.Run(() => CreateSnippets(currentFuncDefAst), cancellationToken));

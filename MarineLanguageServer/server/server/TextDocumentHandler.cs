@@ -12,18 +12,21 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
+using server;
 using Position = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace SampleServer
 {
     public class TextDocumentHandler : ITextDocumentSyncHandler
     {
-        ILanguageServerFacade LanguageServerFacade { get; }
+        private readonly ILanguageServerFacade _languageServerFacade;
+        private readonly MarineLangWorkspaceService _workspaceService;
 
         public TextDocumentHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration,
-            ILanguageServerFacade languageServerFacade)
+            ILanguageServerFacade languageServerFacade, MarineLangWorkspaceService workspaceService)
         {
-            LanguageServerFacade = languageServerFacade;
+            _languageServerFacade = languageServerFacade;
+            _workspaceService = workspaceService;
         }
 
         TextDocumentChangeRegistrationOptions
@@ -72,12 +75,17 @@ namespace SampleServer
         public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken token)
         {
             PublishValidateDiagnostics(request.ContentChanges.First().Text, request.TextDocument.Uri);
+            _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path,
+                request.ContentChanges.First().Text);
+
             return Unit.Task;
         }
 
         public Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
         {
             PublishValidateDiagnostics(request.TextDocument.Text, request.TextDocument.Uri);
+            _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path, request.TextDocument.Text);
+
             return Unit.Task;
         }
 
@@ -89,12 +97,15 @@ namespace SampleServer
         public Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
         {
             PublishValidateDiagnostics(request.Text, request.TextDocument.Uri);
+            _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path,
+                request.Text);
+
             return Unit.Task;
         }
 
         private void PublishValidateDiagnostics(string text, DocumentUri uri)
         {
-            LanguageServerFacade.TextDocument.PublishDiagnostics(
+            _languageServerFacade.TextDocument.PublishDiagnostics(
                 new PublishDiagnosticsParams { Uri = uri, Diagnostics = Validate(text) }
             );
         }
