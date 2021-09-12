@@ -27,21 +27,16 @@ namespace server
             var result = new SyntaxAnalyzer().Parse(tokens);
 
             var tasks = new List<Task<IEnumerable<CompletionItem>>>();
-            FuncDefinitionAst currentFuncDefAst = null;
-            if (!result.IsError)
+            FuncDefinitionAst currentFuncDefAst =
+                await Task.Run(() => GetCurrentFunctionAst(result.programAst, request.Position), cancellationToken);
+            if (currentFuncDefAst != null)
             {
-                currentFuncDefAst = await Task.Run(() => GetCurrentFunctionAst(result.programAst, request.Position),
-                    cancellationToken);
+                tasks.Add(Task.Run(() => CreateFunctions(result.programAst), cancellationToken));
 
-                if (currentFuncDefAst != null)
-                {
-                    tasks.Add(Task.Run(() => CreateFunctions(result.programAst), cancellationToken));
+                tasks.Add(Task.Run(() => CreateFunctionParamaters(currentFuncDefAst), cancellationToken));
+                tasks.Add(Task.Run(() => CreateVariables(currentFuncDefAst, request.Position), cancellationToken));
 
-                    tasks.Add(Task.Run(() => CreateFunctionParamaters(currentFuncDefAst), cancellationToken));
-                    tasks.Add(Task.Run(() => CreateVariables(currentFuncDefAst, request.Position), cancellationToken));
-
-                    tasks.Add(Task.Run(CreateKeywords));
-                }
+                tasks.Add(Task.Run(CreateKeywords, cancellationToken));
             }
 
             tasks.Add(Task.Run(() => CreateSnippets(currentFuncDefAst), cancellationToken));
