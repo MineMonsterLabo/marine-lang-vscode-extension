@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MarineLang.LanguageServerImpl.Services;
 using MarineLang.LexicalAnalysis;
 using MarineLang.Models;
 using MarineLang.SyntaxAnalysis;
@@ -12,18 +13,17 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
-using server;
 using Position = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
-namespace SampleServer
+namespace MarineLang.LanguageServerImpl.Handlers
 {
     public class TextDocumentHandler : ITextDocumentSyncHandler
     {
         private readonly ILanguageServerFacade _languageServerFacade;
-        private readonly MarineLangWorkspaceService _workspaceService;
+        private readonly WorkspaceService _workspaceService;
 
         public TextDocumentHandler(ILogger<TextDocumentHandler> logger, ILanguageServerConfiguration configuration,
-            ILanguageServerFacade languageServerFacade, MarineLangWorkspaceService workspaceService)
+            ILanguageServerFacade languageServerFacade, WorkspaceService workspaceService)
         {
             _languageServerFacade = languageServerFacade;
             _workspaceService = workspaceService;
