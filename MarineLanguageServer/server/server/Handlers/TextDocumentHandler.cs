@@ -133,7 +133,7 @@ namespace MarineLang.LanguageServerImpl.Handlers
             return new Range(ToPosition(range.Start), ToPosition(range.End));
         }
 
-        private Position ToPosition(MarineLang.Models.Position position)
+        private Position ToPosition(Models.Position position)
         {
             return new Position(position.line - 1, position.column - 1);
         }
