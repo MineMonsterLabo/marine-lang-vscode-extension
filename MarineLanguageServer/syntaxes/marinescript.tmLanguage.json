@@ -11,7 +11,7 @@
 	"repository": {
 		"func_decl":{
 			"patterns": [{
-				"match": "(fun)\\s+([a-z_]+)\\((.*)\\)",
+				"match": "(fun)\\s+([a-z_][a-z0-9_]*)\\((.*)\\)",
 				"captures": {
 					"1": {"patterns": [{"include":"#keywords"}]},
 					"2": {"patterns": [{"include":"#func_name"}]},
@@ -22,25 +22,25 @@
 		"func_param":{
 			"patterns": [{
 				"name": "variable.parameter.marinescript",
-				"match": "[a-z_]+"
+				"match": "[a-z_][a-z0-9_]*"
 			}]
 		},
 		"identifier":{
 			"patterns": [{
 				"name": "variable.other.marinescript",
-				"match": "[a-z_]+"
+				"match": "[a-z_][a-z0-9_]*"
 			}]
 		},
 		"func_call":{
 			"patterns": [
 				{
-					"match": "([a-z_]+)\\(\\)",
+					"match": "([a-z_][a-z0-9_]*)\\(\\)",
 					"captures": {
 						"1": {"patterns": [{"include":"#func_name"}]}
 					}
 				},
 				{
-					"match": "([a-z_]+)\\((.+)\\)",
+					"match": "([a-z_][a-z0-9_]*)\\((.+)\\)",
 					"captures": {
 						"1": {"patterns": [{"include":"#func_name"}]},
 						"2": {"patterns": [{"include":"#func_param"}]}
@@ -51,7 +51,7 @@
 		"func_name":{
 			"patterns": [{
 				"name":"entity.name.function.marinescript",
-				"match":"[a-z_]+"
+				"match":"[a-z_][a-z0-9_]*"
 			}]
 		},
 		"constants":{
@@ -64,11 +64,14 @@
 			"patterns": [
 				{"include": "#fun_keyword"},
 				{"include": "#end_keyword"},
+				{"include": "#in_keyword"},
 				{"include": "#let_keyword"},
+				{"include": "#foreach_keyword"},
 				{"include": "#for_keyword"},
 				{"include": "#if_keyword"},
 				{"include": "#else_keyword"},
-				{"include": "#ret_keyword"}
+				{"include": "#ret_keyword"},
+				{"include": "#await_keyword"}
 			],
 			"repository":{
 				"fun_keyword": {
@@ -83,10 +86,22 @@
 						"match": "end"
 					}]
 				},
+				"in_keyword": {
+					"patterns": [{
+						"name": "keyword.other.marinescript",
+						"match": "in"
+					}]
+				},
 				"let_keyword": {
 					"patterns": [{
 						"name": "keyword.control.marinescript",
 						"match": "let"
+					}]
+				},
+				"foreach_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "foreach"
 					}]
 				},
 				"for_keyword": {
@@ -111,6 +126,12 @@
 					"patterns": [{
 						"name": "keyword.control.marinescript",
 						"match": "ret"
+					}]
+				},
+				"await_keyword": {
+					"patterns": [{
+						"name": "keyword.control.marinescript",
+						"match": "await"
 					}]
 				}
 			}

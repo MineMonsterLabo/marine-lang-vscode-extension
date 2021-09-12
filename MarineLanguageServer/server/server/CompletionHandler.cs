@@ -79,6 +79,7 @@ namespace server
                 yield return CreateSnippetItem("elseif", "else if ($1) {\n\t$2\n}");
                 yield return CreateSnippetItem("while", "while ($1) {\n\t$2\n}");
                 yield return CreateSnippetItem("for", "for ${1:i} = $2, $3, $4 {\n\t$5\n}");
+                yield return CreateSnippetItem("foreach", "foreach ${1:val} in $2 {\n\t$3\n}");
                 yield return CreateSnippetItem("letac", "let ${1:foo} = {|$2| $3}");
             }
             else
