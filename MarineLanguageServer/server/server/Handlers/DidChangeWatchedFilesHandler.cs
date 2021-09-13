@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MarineLang.LanguageServerImpl.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -32,10 +33,10 @@ namespace MarineLang.LanguageServerImpl.Handlers
 
         public Task<Unit> Handle(DidChangeWatchedFilesParams request, CancellationToken cancellationToken)
         {
+            var configUrl = DocumentUri.File($"{_workspaceService.RootPath}\\{WorkspaceService.MarineLangConfigFile}");
             foreach (var change in request.Changes)
             {
-                if (change.Type == FileChangeType.Changed &&
-                    change.Uri.Path == $"{_workspaceService.RootPath}\\{WorkspaceService.MarineLangConfigFile}")
+                if (change.Type == FileChangeType.Changed && change.Uri.Path == configUrl.Path)
                 {
                     _workspaceService.LoadConfiguration();
                 }

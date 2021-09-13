@@ -6,7 +6,7 @@ namespace MarineLang.LanguageServerImpl.Services
 {
     public class WorkspaceService
     {
-        public const string MarineLangConfigFile = "marine-lang-config.json";
+        public const string MarineLangConfigFile = "marinelang.config.json";
 
         private readonly ConcurrentDictionary<string, string> _fileBuffers = new ConcurrentDictionary<string, string>();
 
