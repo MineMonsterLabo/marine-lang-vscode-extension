@@ -29,7 +29,11 @@ namespace MarineLang.LanguageServerImpl.Handlers
         public CompletionRegistrationOptions GetRegistrationOptions(CompletionCapability capability,
             ClientCapabilities clientCapabilities)
         {
-            return new CompletionRegistrationOptions();
+            return new CompletionRegistrationOptions()
+            {
+                TriggerCharacters = new Container<string>("."),
+                AllCommitCharacters = new Container<string>("//", "/*", "*/")
+            };
         }
 
         public Task<CompletionList> Handle(CompletionParams request, CancellationToken cancellationToken)
@@ -41,7 +45,8 @@ namespace MarineLang.LanguageServerImpl.Handlers
             var list = new CompletionList();
             if (result.programAst != null)
             {
-                list = new CompletionList(_completionService.GetCompletions(result.programAst, request.Position));
+                list = new CompletionList(_completionService.GetCompletions(result.programAst,
+                    request.Context?.TriggerCharacter, request.Context?.TriggerKind ?? 0, request.Position));
             }
 
             return Task.FromResult(list);

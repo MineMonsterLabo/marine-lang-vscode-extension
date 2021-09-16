@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Concurrent;
 using System.IO;
+using MarineLang.VirtualMachines.Dumps;
+using MarineLang.VirtualMachines.Dumps.Models;
 using Newtonsoft.Json.Linq;
 
 namespace MarineLang.LanguageServerImpl.Services
@@ -11,6 +14,7 @@ namespace MarineLang.LanguageServerImpl.Services
         private readonly ConcurrentDictionary<string, string> _fileBuffers = new ConcurrentDictionary<string, string>();
 
         private string _dumpPath;
+        public MarineDumpModel DumpModel { get; private set; }
 
         public string RootPath { get; private set; }
 
@@ -32,6 +36,16 @@ namespace MarineLang.LanguageServerImpl.Services
             return null;
         }
 
+        public string[] GetMarineFileBufferForStrings(string filePath)
+        {
+            if (_fileBuffers.TryGetValue(filePath, out string buffer))
+            {
+                return buffer.Split(Environment.NewLine);
+            }
+
+            return null;
+        }
+
         public void SetRootPath(string path)
         {
             RootPath = path;
@@ -44,7 +58,10 @@ namespace MarineLang.LanguageServerImpl.Services
             {
                 var jObject = JObject.Parse(File.ReadAllText(configPath));
                 if (jObject.TryGetValue("dumpPath", out JToken dumpPathToken))
+                {
                     _dumpPath = dumpPathToken.Value<string>();
+                    DumpModel = new DumpDeserializer().Deserialize(File.ReadAllText(_dumpPath));
+                }
             }
         }
     }

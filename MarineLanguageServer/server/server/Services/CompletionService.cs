@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using MarineLang.Models.Asts;
+using MarineLang.VirtualMachines.Dumps.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 
 namespace MarineLang.LanguageServerImpl.Services
@@ -14,17 +15,38 @@ namespace MarineLang.LanguageServerImpl.Services
             _workspaceService = workspaceService;
         }
 
-        public IEnumerable<CompletionItem> GetCompletions(ProgramAst programAst, Position position)
+        public IEnumerable<CompletionItem> GetCompletions(ProgramAst programAst, string triggerCharacter,
+            CompletionTriggerKind triggerKind, Position position)
         {
             var list = new List<CompletionItem>();
-            list.AddRange(programAst.funcDefinitionAsts.Select(e => CreateCompletionItem(e.funcName,
+            list.AddRange(programAst.funcDefinitionAsts.Select(e => CreateCompletionItem(e.funcName, 2, string.Empty,
                 CompletionItemKind.Function,
                 $"function {e.funcName}({string.Join(", ", e.args.Select(a => a.VarName))})")));
             var funcDefinition = HittingFuncDefinition(programAst, position);
             if (funcDefinition != null)
             {
-                list.AddRange(funcDefinition.args.Select(e =>
-                    CreateCompletionItem(e.VarName, CompletionItemKind.Variable, $"paramater {e.VarName}")));
+                StatementAst statementAst = HittingStatement(funcDefinition, position);
+                if (statementAst != null)
+                {
+                    ExprAst exprAst = HittingExpr(statementAst, position);
+                }
+
+                /*if (triggerCharacter == ".")
+                {
+                }
+                else
+                {*/
+                    list.AddRange(_workspaceService.DumpModel.StaticTypes.Select(e =>
+                        CreateCompletionItem(e.Key, 4, e.Value.FullName, CompletionItemKind.Class)));
+                    list.AddRange(_workspaceService.DumpModel.GlobalMethods.Select(e =>
+                        CreateCompletionItem(e.Key, 3, BuildDoc(e.Key, e.Value), CompletionItemKind.Method)));
+                    list.AddRange(_workspaceService.DumpModel.GlobalVariables.Select(e =>
+                        CreateCompletionItem(e.Key, 1, e.Value.Name, CompletionItemKind.Variable)));
+
+                    list.AddRange(funcDefinition.args.Select(e =>
+                        CreateCompletionItem(e.VarName, 0, string.Empty, CompletionItemKind.Variable,
+                            $"paramater {e.VarName}")));
+                //}
             }
             else
             {
@@ -44,11 +66,19 @@ namespace MarineLang.LanguageServerImpl.Services
             return funcDefinitionAst.LookUp<StatementAst>().FirstOrDefault(e => Contains(e, position));
         }
 
-        private CompletionItem CreateCompletionItem(string label, CompletionItemKind kind, string detail = null)
+        private ExprAst HittingExpr(StatementAst statementAst, Position position)
+        {
+            return statementAst.LookUp<ExprAst>().FirstOrDefault(e => Contains(e, position));
+        }
+
+        private CompletionItem CreateCompletionItem(string label, int order, string document,
+            CompletionItemKind kind, string detail = null)
         {
             return new CompletionItem()
             {
                 Label = label,
+                SortText = order + label,
+                Documentation = document,
                 Kind = kind,
                 Detail = detail
             };
@@ -66,9 +96,15 @@ namespace MarineLang.LanguageServerImpl.Services
             };
         }
 
+        private string BuildDoc(string methodName, MethodDumpModel model)
+        {
+            return
+                $"{model.TypeRef.Name} {methodName}({string.Join(',', model.Parameters.Select(e => $"{e.Value.TypeRef.Name} {e.Key}"))})";
+        }
+
         private bool Contains(IAst ast, Position position)
         {
-            return ast.Range.Contain(new Models.Position(position.Line + 1, position.Line + 1));
+            return ast.Range.Contain(new Models.Position(position.Line + 1, position.Character + 1));
         }
 
         /*yield return CreateCompletionItem("let", CompletionItemKind.Keyword);
