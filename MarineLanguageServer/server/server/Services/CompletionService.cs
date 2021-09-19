@@ -30,13 +30,13 @@ namespace MarineLang.LanguageServerImpl.Services
                 if (triggerCharacter == ".")
                 {
                     var lineBuffer = _workspaceService.GetMarineFileBufferForStrings(filePath)[position.Line];
-                    var tokens = new LexicalAnalyzer().GetTokens(lineBuffer.Remove(lineBuffer.Length - 1));
+                    var tokens = new LexicalAnalyzer().GetTokens(lineBuffer.Remove(position.Character - 1, 1));
                     var result = new SyntaxAnalyzer().marineParser.ParseStatement(TokenInput.Create(tokens.ToArray()))
                         .Result;
                     if (result.IsOk && result.RawValue is ExprStatementAst exprStatementAst &&
                         _workspaceService.DumpModel != null)
                     {
-                        var currentExpr = CreateAstParent(exprStatementAst.expr);
+                        var currentExpr = CreateAstParent(exprStatementAst.expr, new Position(0, position.Character - 1));
                         TypeDumpModel currentType = null;
                         while (currentExpr != null)
                         {
@@ -329,7 +329,7 @@ namespace MarineLang.LanguageServerImpl.Services
             return null;
         }
 
-        private ExprAstParent CreateAstParent(ExprAst exprAst)
+        private ExprAstParent CreateAstParent(ExprAst exprAst, Position position)
         {
             ExprAstParent root = new ExprAstParent(null, exprAst);
             ExprAstParent current = root;
@@ -337,6 +337,13 @@ namespace MarineLang.LanguageServerImpl.Services
             {
                 if (exprAst is InstanceFuncCallAst instanceFuncCallAst)
                 {
+                    var intersect =
+                        instanceFuncCallAst.instancefuncCallAst.args.FirstOrDefault(e => Contains(e, position));
+                    if (intersect != null)
+                    {
+                        return CreateAstParent(intersect, position);
+                    }
+
                     current = new ExprAstParent(current, instanceFuncCallAst.instanceExpr);
                     exprAst = instanceFuncCallAst.instanceExpr;
                 }
