@@ -46,7 +46,8 @@ namespace MarineLang.LanguageServerImpl.Handlers
             if (result.programAst != null)
             {
                 list = new CompletionList(_completionService.GetCompletions(result.programAst,
-                    request.Context?.TriggerCharacter, request.Context?.TriggerKind ?? 0, request.Position));
+                    request.TextDocument.Uri.Path, request.Context?.TriggerCharacter, request.Context?.TriggerKind ?? 0,
+                    request.Position));
             }
 
             return Task.FromResult(list);
