@@ -60,7 +60,17 @@ namespace MarineLang.LanguageServerImpl.Services
                 if (jObject.TryGetValue("dumpPath", out JToken dumpPathToken))
                 {
                     _dumpPath = dumpPathToken.Value<string>();
-                    DumpModel = new DumpDeserializer().Deserialize(File.ReadAllText(_dumpPath));
+                    if (File.Exists(_dumpPath))
+                    {
+                        try
+                        {
+                            DumpModel = new DumpDeserializer().Deserialize(File.ReadAllText(_dumpPath));
+                        }
+                        catch
+                        {
+                            //ignore
+                        }
+                    }
                 }
             }
         }
