@@ -29,243 +29,267 @@ namespace MarineLang.LanguageServerImpl.Services
             {
                 if (triggerCharacter == ".")
                 {
+                    if (_workspaceService.DumpModel == null)
+                        return list;
+
                     var lineBuffer = _workspaceService.GetMarineFileBufferForStrings(filePath)[position.Line];
-                    var tokens = new LexicalAnalyzer().GetTokens(lineBuffer.Remove(position.Character - 1, 1));
+                    var tokens = new LexicalAnalyzer().GetTokens(lineBuffer.Remove(position.Character - 1, 1) + "{}");
                     var result = new SyntaxAnalyzer().marineParser.ParseStatement(TokenInput.Create(tokens.ToArray()))
                         .Result;
-                    if (result.IsOk && result.RawValue is ExprStatementAst exprStatementAst &&
-                        _workspaceService.DumpModel != null)
+                    ExprAst exprAst;
+                    if (result.IsOk)
                     {
-                        var currentExpr = CreateAstParent(exprStatementAst.expr, new Position(0, position.Character - 1));
-                        TypeDumpModel currentType = null;
-                        while (currentExpr != null)
+                        exprAst = HittingExpr(result.RawValue, new Position(0, position.Character - 1));
+                        while (true)
                         {
-                            var name = GetNameExprAst(currentExpr.Current);
-                            var upperName = NameUtil.GetUpperCamelName(name);
-                            var lowerName = NameUtil.GetLowerCamelName(name);
-                            if (currentExpr.Current is FuncCallAst)
+                            if (exprAst is VariableAst or InstanceFieldAst or FuncCallAst or InstanceFuncCallAst)
                             {
-                                if (currentType == null)
+                                break;
+                            }
+
+                            var expr = HittingNextExpr(exprAst, new Position(0, position.Character - 1));
+                            if (expr == null)
+                            {
+                                break;
+                            }
+
+                            exprAst = expr;
+                        }
+                    }
+                    else
+                    {
+                        return list;
+                    }
+
+                    var currentExpr = CreateAstParent(exprAst, new Position(0, position.Character - 1));
+                    TypeDumpModel currentType = null;
+                    while (currentExpr != null)
+                    {
+                        var name = GetNameExprAst(currentExpr.Current) ?? string.Empty;
+                        var upperName = NameUtil.GetUpperCamelName(name);
+                        var lowerName = NameUtil.GetLowerCamelName(name);
+                        if (currentExpr.Current is FuncCallAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var methods = _workspaceService.DumpModel.GlobalMethods;
+                                if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
                                 {
-                                    var methods = _workspaceService.DumpModel.GlobalMethods;
-                                    if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
-                                    {
-                                        currentType =
-                                            methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
+                                    currentType =
+                                        methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
                                 }
                                 else
                                 {
-                                    if (currentType.Members.TryGetValue(upperName,
-                                        out List<MemberDumpModel> memberDumpModel))
-                                    {
-                                        currentType =
-                                            ((MethodDumpModel)memberDumpModel.First()).TypeName.GetTypeDumpModel(
-                                                _workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
-                            else if (currentExpr.Current is VariableAst)
+                            else
                             {
-                                if (currentType == null)
+                                if (currentType.Members.TryGetValue(upperName,
+                                    out List<MemberDumpModel> memberDumpModel))
                                 {
-                                    var variables = _workspaceService.DumpModel.GlobalVariables;
-                                    if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
-                                    {
-                                        currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
+                                    currentType =
+                                        ((MethodDumpModel)memberDumpModel.First()).TypeName.GetTypeDumpModel(
+                                            _workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
                                 }
                                 else
                                 {
-                                    if (currentType.Members.TryGetValue(lowerName,
-                                        out List<MemberDumpModel> memberDumpModel))
-                                    {
-                                        var first = memberDumpModel.First();
-                                        if (first is FieldDumpModel fieldDumpModel)
-                                        {
-                                            currentType =
-                                                fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                    }
-                                    else if (currentType.Members.TryGetValue(upperName,
-                                        out List<MemberDumpModel> memberDumpModel2))
-                                    {
-                                        var first = memberDumpModel2.First();
-                                        if (first is PropertyDumpModel propertyDumpModel)
-                                        {
-                                            currentType =
-                                                propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
-                                                    .DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            else if (currentExpr.Current is InstanceFuncCallAst)
-                            {
-                                if (currentType == null)
-                                {
-                                    var methods = _workspaceService.DumpModel.GlobalMethods;
-                                    var variables = _workspaceService.DumpModel.GlobalVariables;
-                                    if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
-                                    {
-                                        currentType =
-                                            methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
-                                    {
-                                        currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    if (currentType.Members.TryGetValue(lowerName,
-                                        out List<MemberDumpModel> memberDumpModel))
-                                    {
-                                        var first = memberDumpModel.First();
-                                        if (first is FieldDumpModel fieldDumpModel)
-                                        {
-                                            currentType =
-                                                fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else if (currentType.Members.TryGetValue(upperName,
-                                        out List<MemberDumpModel> memberDumpModel2))
-                                    {
-                                        var first = memberDumpModel2.First();
-                                        if (first is PropertyDumpModel propertyDumpModel)
-                                        {
-                                            currentType =
-                                                propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
-                                                    .DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else if (first is MethodDumpModel memberDumpModel3)
-                                        {
-                                            currentType =
-                                                memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
-                                                    .DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-                            else if (currentExpr.Current is InstanceFieldAst)
-                            {
-                                if (currentType == null)
-                                {
-                                    var methods = _workspaceService.DumpModel.GlobalMethods;
-                                    var variables = _workspaceService.DumpModel.GlobalVariables;
-                                    if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
-                                    {
-                                        currentType =
-                                            methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
-                                    {
-                                        currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                        currentExpr = currentExpr.Parent;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                                else
-                                {
-                                    if (currentType.Members.TryGetValue(lowerName,
-                                        out List<MemberDumpModel> memberDumpModel))
-                                    {
-                                        var first = memberDumpModel.First();
-                                        if (first is FieldDumpModel fieldDumpModel)
-                                        {
-                                            currentType =
-                                                fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else if (currentType.Members.TryGetValue(upperName,
-                                        out List<MemberDumpModel> memberDumpModel2))
-                                    {
-                                        var first = memberDumpModel2.First();
-                                        if (first is PropertyDumpModel propertyDumpModel)
-                                        {
-                                            currentType =
-                                                propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
-                                                    .DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else if (first is MethodDumpModel memberDumpModel3)
-                                        {
-                                            currentType =
-                                                memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
-                                                    .DumpModel);
-                                            currentExpr = currentExpr.Parent;
-                                        }
-                                        else
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
                         }
-
-                        if (currentType != null)
-                            list.AddRange(CreateTypeCompletionItems(currentType));
+                        else if (currentExpr.Current is VariableAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var variables = _workspaceService.DumpModel.GlobalVariables;
+                                if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
+                                {
+                                    currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (currentType.Members.TryGetValue(lowerName,
+                                    out List<MemberDumpModel> memberDumpModel))
+                                {
+                                    var first = memberDumpModel.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                }
+                                else if (currentType.Members.TryGetValue(upperName,
+                                    out List<MemberDumpModel> memberDumpModel2))
+                                {
+                                    var first = memberDumpModel2.First();
+                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else if (currentExpr.Current is InstanceFuncCallAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var methods = _workspaceService.DumpModel.GlobalMethods;
+                                var variables = _workspaceService.DumpModel.GlobalVariables;
+                                if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
+                                {
+                                    currentType =
+                                        methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                }
+                                else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
+                                {
+                                    currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (currentType.Members.TryGetValue(lowerName,
+                                    out List<MemberDumpModel> memberDumpModel))
+                                {
+                                    var first = memberDumpModel.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else if (currentType.Members.TryGetValue(upperName,
+                                    out List<MemberDumpModel> memberDumpModel2))
+                                {
+                                    var first = memberDumpModel2.First();
+                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else if (first is MethodDumpModel memberDumpModel3)
+                                    {
+                                        currentType =
+                                            memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else if (currentExpr.Current is InstanceFieldAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var methods = _workspaceService.DumpModel.GlobalMethods;
+                                var variables = _workspaceService.DumpModel.GlobalVariables;
+                                if (methods.TryGetValue(upperName, out MethodDumpModel methodModel))
+                                {
+                                    currentType =
+                                        methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                }
+                                else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
+                                {
+                                    currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (currentType.Members.TryGetValue(lowerName,
+                                    out List<MemberDumpModel> memberDumpModel))
+                                {
+                                    var first = memberDumpModel.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else if (currentType.Members.TryGetValue(upperName,
+                                    out List<MemberDumpModel> memberDumpModel2))
+                                {
+                                    var first = memberDumpModel2.First();
+                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else if (first is MethodDumpModel memberDumpModel3)
+                                    {
+                                        currentType =
+                                            memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
                     }
+
+                    if (currentType != null)
+                        list.AddRange(CreateTypeCompletionItems(currentType));
                 }
                 else
                 {
@@ -313,6 +337,11 @@ namespace MarineLang.LanguageServerImpl.Services
         private ExprAst HittingExpr(StatementAst statementAst, Position position)
         {
             return statementAst.LookUp<ExprAst>().FirstOrDefault(e => Contains(e, position));
+        }
+
+        private ExprAst HittingNextExpr(ExprAst exprAst, Position position)
+        {
+            return exprAst.LookUp<ExprAst>().FirstOrDefault(e => e != exprAst && Contains(e, position));
         }
 
         private string GetNameExprAst(ExprAst exprAst)
