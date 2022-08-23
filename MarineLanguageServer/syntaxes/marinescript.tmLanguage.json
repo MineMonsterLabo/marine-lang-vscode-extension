@@ -11,6 +11,7 @@
 		{"include": "#bool"},
 		{"include": "#string"},
 		{"include": "#identifier"},
+		{"include": "#upper_camel_identifier"},
 		{"include": "#number"}
 	],
 	"repository": {
@@ -41,6 +42,10 @@
 		"identifier":{
 			"name": "variable.other.marinescript",
 			"match": "[a-z][a-z_0-9]*"
+		},
+		"upper_camel_identifier":{
+			"name":"entity.name.class.marinescript",
+			"match":"[A-Za-z]([A-Za-z_]|[0-9])+"
 		},
 		"func_call":{
 			"match": "([a-z]([a-z_]|[0-9])*)\\(",
