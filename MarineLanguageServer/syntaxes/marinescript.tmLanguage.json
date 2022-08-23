@@ -10,6 +10,7 @@
 		{"include": "#func_call"},
 		{"include": "#bool"},
 		{"include": "#string"},
+		{"include": "#namespace_section"},
 		{"include": "#identifier"},
 		{"include": "#upper_camel_identifier"},
 		{"include": "#number"}
@@ -38,6 +39,20 @@
 				"1": {"patterns": [{"include":"#keywords"}]},
 				"2": {"patterns": [{"include":"#func_name"}]}
 			}
+		},
+		"namespace_section":{
+			"match": "([a-z]([a-z_]|[0-9])+)(::)",
+			"captures": {
+				"1": {"patterns": [{"include":"#namespace_name"}]},
+				"3": {"patterns": [{"include":"#double_collon"}]}
+			}
+		},
+		"namespace_name":{
+			"name":"entity.name.tag.marinescript",
+			"match": "[a-z]([a-z_]|[0-9])+"
+		},
+		"double_collon":{
+			"match": "::"
 		},
 		"identifier":{
 			"name": "variable.other.marinescript",
