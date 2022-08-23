@@ -21,7 +21,7 @@ export function activate(context: ExtensionContext) {
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: [{ scheme: 'file', language: 'marinescript' }],
 		synchronize: {
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			fileEvents: workspace.createFileSystemWatcher('{**/*.mrn,**/*.config.json}')
 		}
 	};
 

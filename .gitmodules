@@ -1,0 +1,3 @@
+[submodule "MarineLanguageServer/server/marine-lang"]
+	path = MarineLanguageServer/server/marine-lang
+	url = https://github.com/MineMonsterLabo/marine-lang.git

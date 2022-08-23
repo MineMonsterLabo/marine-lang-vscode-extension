@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MarineLang.LanguageServerImpl.Handlers;
 using MarineLang.LanguageServerImpl.Services;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using OmniSharp.Extensions.LanguageServer.Server;
@@ -17,7 +18,7 @@ namespace MarineLang.LanguageServerImpl
         {
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File("server-logs/log.txt", rollingInterval: RollingInterval.Day)
                 .MinimumLevel.Verbose()
                 .CreateLogger();
 
@@ -33,11 +34,27 @@ namespace MarineLang.LanguageServerImpl
                                 .SetMinimumLevel(LogLevel.Debug)
                         )
                         .WithHandler<CompletionHandler>()
+                        .WithHandler<DidChangeWatchedFilesHandler>()
                         .WithHandler<TextDocumentHandler>()
                         .WithServices(x => x.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace)))
                         .WithServices(
-                            services => { services.AddSingleton<WorkspaceService>(); }
+                            services =>
+                            {
+                                services.AddSingleton<WorkspaceService>();
+                                services.AddSingleton<CompletionService>();
+                            }
                         )
+                        .OnInitialize((server, param, token) =>
+                        {
+                            WorkspaceService workspaceService = server.Services.GetService<WorkspaceService>();
+                            if (workspaceService != null)
+                            {
+                                workspaceService.SetRootPath(param.RootPath);
+                                workspaceService.LoadConfiguration();
+                            }
+
+                            return Unit.Task;
+                        })
             );
 
             await server.WaitForExit;
