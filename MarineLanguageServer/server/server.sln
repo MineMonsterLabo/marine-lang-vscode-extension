@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MineUtil", "marine-lang\Min
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarineLangUnitTest", "marine-lang\MarineLangUnitTest\MarineLangUnitTest.csproj", "{5C3A5C27-0EB5-401F-9806-6EF1D9DDB269}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarineLang.CodeDom", "marine-lang\MarineLang.CodeDom\MarineLang.CodeDom.csproj", "{A494E544-DEAA-4D39-A07A-F564F1D48969}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarineLang.CodeAnalysis", "marine-lang\MarineLang.CodeAnalysis\MarineLang.CodeAnalysis.csproj", "{EA1AA9C3-AB0E-4798-AE30-A98D5D89EEFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{5C3A5C27-0EB5-401F-9806-6EF1D9DDB269}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C3A5C27-0EB5-401F-9806-6EF1D9DDB269}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C3A5C27-0EB5-401F-9806-6EF1D9DDB269}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A494E544-DEAA-4D39-A07A-F564F1D48969}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A494E544-DEAA-4D39-A07A-F564F1D48969}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A494E544-DEAA-4D39-A07A-F564F1D48969}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A494E544-DEAA-4D39-A07A-F564F1D48969}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA1AA9C3-AB0E-4798-AE30-A98D5D89EEFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA1AA9C3-AB0E-4798-AE30-A98D5D89EEFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA1AA9C3-AB0E-4798-AE30-A98D5D89EEFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA1AA9C3-AB0E-4798-AE30-A98D5D89EEFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
