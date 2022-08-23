@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <LangVersion>latest</LangVersion>
     <RootNamespace>MarineLang.LanguageServerImpl</RootNamespace>
-    <TargetFrameworks>net5.0;net6.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

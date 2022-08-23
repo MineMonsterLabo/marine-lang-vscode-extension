@@ -9,7 +9,7 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
-	let serverPath = context.asAbsolutePath("server/server/bin/Debug/netcoreapp3.1/server");
+	let serverPath = context.asAbsolutePath("server/server/bin/Release/net6.0/server");
 
 	let serverOptions: ServerOptions = {
 		run: { command: serverPath },
