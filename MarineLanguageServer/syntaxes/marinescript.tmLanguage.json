@@ -52,6 +52,7 @@
 			"match": "[a-z]([a-z_]|[0-9])+"
 		},
 		"double_collon":{
+			"name":"entity.other.double-collon.marinescript",
 			"match": "::"
 		},
 		"identifier":{
