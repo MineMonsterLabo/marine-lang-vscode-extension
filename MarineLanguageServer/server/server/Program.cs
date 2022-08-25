@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using MarineLang.LanguageServerImpl.Handlers;
 using MarineLang.LanguageServerImpl.Services;
@@ -16,9 +18,10 @@ namespace MarineLang.LanguageServerImpl
 
         private static async Task MainAsync(string[] args)
         {
+            var executeFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             Log.Logger = new LoggerConfiguration()
                 .Enrich.FromLogContext()
-                .WriteTo.File("server-logs/log.txt", rollingInterval: RollingInterval.Day)
+                .WriteTo.File($"{executeFolder}/server-logs/log.txt", rollingInterval: RollingInterval.Day)
                 .MinimumLevel.Verbose()
                 .CreateLogger();
 
