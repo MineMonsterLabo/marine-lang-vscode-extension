@@ -67,7 +67,7 @@ namespace MarineLang.LanguageServerImpl.Services
                     {
                         var name = GetNameExprAst(currentExpr.Current) ?? string.Empty;
                         var upperName = NameUtil.GetUpperCamelName(name);
-                        var lowerName = NameUtil.GetLowerCamelName(name);
+                        var lowerName = NameUtil.ConvertCameName(name);
                         if (currentExpr.Current is FuncCallAst)
                         {
                             if (currentType == null)
@@ -87,7 +87,7 @@ namespace MarineLang.LanguageServerImpl.Services
                             else
                             {
                                 if (currentType.Members.TryGetValue(upperName,
-                                    out List<MemberDumpModel> memberDumpModel))
+                                        out List<MemberDumpModel> memberDumpModel))
                                 {
                                     currentType =
                                         ((MethodDumpModel)memberDumpModel.First()).TypeName.GetTypeDumpModel(
@@ -118,7 +118,7 @@ namespace MarineLang.LanguageServerImpl.Services
                             else
                             {
                                 if (currentType.Members.TryGetValue(lowerName,
-                                    out List<MemberDumpModel> memberDumpModel))
+                                        out List<MemberDumpModel> memberDumpModel))
                                 {
                                     var first = memberDumpModel.First();
                                     if (first is FieldDumpModel fieldDumpModel)
@@ -129,7 +129,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                     }
                                 }
                                 else if (currentType.Members.TryGetValue(upperName,
-                                    out List<MemberDumpModel> memberDumpModel2))
+                                             out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
                                     if (first is PropertyDumpModel propertyDumpModel)
@@ -175,7 +175,7 @@ namespace MarineLang.LanguageServerImpl.Services
                             else
                             {
                                 if (currentType.Members.TryGetValue(lowerName,
-                                    out List<MemberDumpModel> memberDumpModel))
+                                        out List<MemberDumpModel> memberDumpModel))
                                 {
                                     var first = memberDumpModel.First();
                                     if (first is FieldDumpModel fieldDumpModel)
@@ -190,7 +190,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                     }
                                 }
                                 else if (currentType.Members.TryGetValue(upperName,
-                                    out List<MemberDumpModel> memberDumpModel2))
+                                             out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
                                     if (first is PropertyDumpModel propertyDumpModel)
@@ -243,7 +243,7 @@ namespace MarineLang.LanguageServerImpl.Services
                             else
                             {
                                 if (currentType.Members.TryGetValue(lowerName,
-                                    out List<MemberDumpModel> memberDumpModel))
+                                        out List<MemberDumpModel> memberDumpModel))
                                 {
                                     var first = memberDumpModel.First();
                                     if (first is FieldDumpModel fieldDumpModel)
@@ -258,7 +258,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                     }
                                 }
                                 else if (currentType.Members.TryGetValue(upperName,
-                                    out List<MemberDumpModel> memberDumpModel2))
+                                             out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
                                     if (first is PropertyDumpModel propertyDumpModel)
