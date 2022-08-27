@@ -2,89 +2,251 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "marinescript",
 	"patterns": [
-		{"include": "#line_comment"},
-		{"include": "#range_comment"},
-		{"include": "#other_keyword"},
-		{"include": "#control_keyword"},
-		{"include": "#func_decl"},
-		{"include": "#func_call"},
-		{"include": "#bool"},
-		{"include": "#string"},
-		{"include": "#namespace_section"},
-		{"include": "#identifier"},
-		{"include": "#upper_camel_identifier"},
-		{"include": "#number"}
+		{
+			"include": "#line_comment"
+		},
+		{
+			"include": "#range_comment"
+		},
+		{
+			"include": "#program"
+		}
 	],
 	"repository": {
-		"line_comment":{
+		"line_comment": {
 			"name": "comment.marinescript",
 			"match": "//.*"
 		},
-		"range_comment":{
+		"range_comment": {
 			"name": "comment.marinescript",
 			"begin": "/\\*",
 			"end": "\\*/"
 		},
-		"other_keyword": {
-			"name": "keyword.other.marinescript",
-			"match": "fun|end|\\sin"
+		"program": {
+			"name": "entity.other.program.marinescript",
+			"patterns": [
+				{
+					"include": "#func_definition"
+				}
+			]
 		},
-		"control_keyword":{
-			"name": "keyword.control.marinescript",
-			"match": "let|foreach|for|while|yield|if|else|ret|.await|null|new"
+		"func_definition": {
+			"name": "entity.other.funcdefinition.marinescript",
+			"begin": "\\b(fun)\\s+([a-z]([a-z_]|[0-9])+)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.other.func.marinescript"
+				},
+				"2": {
+					"patterns": [
+						{
+							"include": "#func_name"
+						}
+					]
+				}
+			},
+			"end": "\\b(end)\\b",
+			"endCaptures": {
+				"1": {
+					"name": "keyword.other.func.marinescript"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#func_body"
+				}
+			]
 		},
-		"func_decl":{
-			"match": "(fun)\\s+([a-z_]+)",
+		"func_body": {
+			"patterns": [
+				{
+					"include": "#statement"
+				}
+			]
+		},
+		"statement": {
+			"patterns": [
+				{
+					"include": "#break_statement"
+				},
+				{
+					"include": "#yield_statement"
+				},
+				{
+					"include": "#while_statement"
+				},
+				{
+					"include": "#for_statement"
+				},
+				{
+					"include": "#foreach_statement"
+				},
+				{
+					"include": "#ret_statement"
+				},
+				{
+					"include": "#assignment"
+				},
+				{
+					"include": "#expr"
+				}
+			]
+		},
+		"break_statement": {
+			"name": "keyword.control.break.marinescript",
+			"match": "break"
+		},
+		"yield_statement": {
+			"name": "keyword.control.yield.marinescript",
+			"match": "yield"
+		},
+		"while_statement": {
+			"begin": "(while)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.while.marinescript"
+				}
+			},
+			"end": "\\}",
+			"patterns": [
+				{
+					"begin": "\\s+(?",
+					"end": ")?\\s+",
+					"patterns": [
+						{
+							"include": "#expr"
+						}
+					]
+				},
+				{
+					"include": "#block"
+				}
+			]
+		},
+		"for_statememnt": {
+			"begin": "(for)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.for.marinescript"
+				}
+			},
+			"end": "\\}",
+			"patterns": [
+				{
+					"begin": "\\s+(?",
+					"end": ")?\\s+",
+					"patterns": [
+						{
+							"include": "#expr"
+						}
+					]
+				},
+				{
+					"include": "#block"
+				}
+			]
+		},
+		"foreach_statememnt": {
+			"begin": "(foreach)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.foreach.marinescript"
+				}
+			},
+			"end": "\\}",
+			"patterns": [
+				{
+					"begin": "\\s+(?",
+					"end": ")?\\s+",
+					"patterns": [
+						{
+							"include": "#expr"
+						}
+					]
+				},
+				{
+					"include": "#block"
+				}
+			]
+		},
+		"ret_statement": {
+			"match": "(ret)\\s",
 			"captures": {
-				"1": {"patterns": [{"include":"#keywords"}]},
-				"2": {"patterns": [{"include":"#func_name"}]}
+				"1": {
+					"name": "keyword.control.ret.marinescript"
+				}
 			}
 		},
-		"namespace_section":{
-			"match": "([a-z]([a-z_]|[0-9])+)(::)",
+		"assignment": {
+			"match": "(let)\\s",
 			"captures": {
-				"1": {"patterns": [{"include":"#namespace_name"}]},
-				"3": {"patterns": [{"include":"#double_collon"}]}
+				"1": {
+					"name": "keyword.control.let.marinescript"
+				}
 			}
 		},
-		"namespace_name":{
-			"name":"entity.name.tag.marinescript",
+		"field_assignment": {},
+		"static_field_assignment": {},
+		"re_assignment_variable": {},
+		"re_assignment_indexer": {},
+		"block": {
+			"begin": "\\{",
+			"end": "\\}",
+			"patterns": [
+				{
+					"include": "#statement"
+				}
+			]
+		},
+		"expr": {
+			"patterns": [
+				{
+					"include": "#if_expr"
+				}
+			]
+		},
+		"if_expr": {
+			"begin": "(if)",
+			"beginCaptures": {
+				"1": {
+					"name": "keyword.control.if.marinescript"
+				}
+			},
+			"end": "\\}",
+			"patterns": [
+				{
+					"begin": "\\s(?",
+					"end": ")?\\s+",
+					"patterns": [
+						{
+							"include": "#expr"
+						}
+					]
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#statement"
+						}
+					]
+				}
+			]
+		},
+		"binary_op_expr": {},
+		"unary_op_expr": {},
+		"dot_op_expr": {},
+		"macro": {
+			"name": "entity.other.macro.marinescript"
+		},
+		"func_name": {
+			"name": "entity.name.function",
 			"match": "[a-z]([a-z_]|[0-9])+"
 		},
-		"double_collon":{
-			"name":"entity.other.double-collon.marinescript",
-			"match": "::"
-		},
-		"identifier":{
-			"name": "variable.other.marinescript",
-			"match": "[a-z][a-z_0-9]*"
-		},
-		"upper_camel_identifier":{
-			"name":"entity.name.class.marinescript",
-			"match":"[A-Za-z]([A-Za-z_]|[0-9])+"
-		},
-		"func_call":{
-			"match": "([a-z]([a-z_]|[0-9])*)\\(",
-			"captures": {
-				"1": {"patterns": [{"include":"#func_name"}]}
-			}
-		},
-		"func_name":{
-			"name":"entity.name.function.marinescript",
-			"match":"[a-z]([a-z_]|[0-9])+"
-		},
-		"number":{
-			"name":"constant.numeric.marinescript",
-			"match":"\\b[0-9]+\\b"
-		},
-		"bool":{
-			"name":"keyword.other.marinescript",
-			"match":"\\b(true|false)\\b"
-		},
-		"string":{
-			"name":"string",
-			"begin":"\"",
-			"end":"\""
+		"unary_op": {
+			"name": "keyword.operator.unary.marinescript",
+			"match": "\\-|\\!"
 		}
 	},
 	"scopeName": "source.mrn"
