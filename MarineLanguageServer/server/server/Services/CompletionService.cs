@@ -423,12 +423,12 @@ namespace MarineLang.LanguageServerImpl.Services
                 switch (first)
                 {
                     case FieldDumpModel fieldDumpModel:
-                        yield return CreateCompletionItem(ToSnakeCase(pair.Key), 0,
+                        yield return CreateCompletionItem(pair.Key, 0,
                             fieldDumpModel.TypeName.Name, CompletionItemKind.Field);
                         break;
 
                     case PropertyDumpModel propertyDumpModel:
-                        yield return CreateCompletionItem(ToSnakeCase(pair.Key), 1,
+                        yield return CreateCompletionItem(pair.Key, 1,
                             propertyDumpModel.TypeName.Name, CompletionItemKind.Property);
                         break;
 
