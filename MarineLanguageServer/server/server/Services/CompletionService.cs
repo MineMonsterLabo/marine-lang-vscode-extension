@@ -423,12 +423,12 @@ namespace MarineLang.LanguageServerImpl.Services
                 switch (first)
                 {
                     case FieldDumpModel fieldDumpModel:
-                        yield return CreateCompletionItem(ToSnakeCase(pair.Key), 0,
+                        yield return CreateCompletionItem(ToSnakeCase(pair.Key, true), 0,
                             fieldDumpModel.TypeName.Name, CompletionItemKind.Field);
                         break;
 
                     case PropertyDumpModel propertyDumpModel:
-                        yield return CreateCompletionItem(ToSnakeCase(pair.Key), 1,
+                        yield return CreateCompletionItem(ToSnakeCase(pair.Key, true), 1,
                             propertyDumpModel.TypeName.Name, CompletionItemKind.Property);
                         break;
 
@@ -469,11 +469,20 @@ namespace MarineLang.LanguageServerImpl.Services
             return ast.Range.Contain(new Models.Position(position.Line + 1, position.Character + 1));
         }
 
-        private string ToSnakeCase(string str)
+        private string ToSnakeCase(string str, bool isNotConvertFirstChar = false)
         {
             var i = 0;
-            return string.Join("",
-                str.Select(c => char.IsUpper(c) ? (i++ > 0 ? "_" : "") + char.ToLower(c) : c.ToString()));
+            return string.Join("", str.Select(c =>
+            {
+                var isUpper = char.IsUpper(c);
+                var appendChar = char.ToLower(c);
+                if (i == 0 && isNotConvertFirstChar)
+                {
+                    appendChar = c;
+                }
+
+                return isUpper ? (i++ > 0 ? "_" : "") + appendChar : c.ToString();
+            }));
         }
     }
 }
