@@ -54,14 +54,14 @@
 		},
 		"other_keyword": {
 			"name": "keyword.other.marinescript",
-			"match": "fun|end|\\sin"
+			"match": "\\bfun\\b|\\bend\\b|\\bin\\b"
 		},
 		"control_keyword": {
 			"name": "keyword.control.marinescript",
-			"match": "let|foreach|for|while|yield|if|else|ret|.await|null|new"
+			"match": "\\blet\\b|\\bforeach\\b|\\bfor\\b|\\bwhile\\b|\\byield\\b|\\bif\\b|\\belse\\b|\\bret\\b|.await\\b|\\bnull\\b|\\bnew\\b"
 		},
 		"func_decl": {
-			"match": "(fun)\\s+([a-z_]+)",
+			"match": "\\b(fun)\\s+([a-z_]+)",
 			"captures": {
 				"1": {
 					"patterns": [
