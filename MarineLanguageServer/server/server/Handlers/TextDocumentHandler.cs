@@ -13,12 +13,15 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
+using OmniSharp.Extensions.LanguageServer.Protocol.Window;
 using Position = OmniSharp.Extensions.LanguageServer.Protocol.Models.Position;
 
 namespace MarineLang.LanguageServerImpl.Handlers
 {
     public class TextDocumentHandler : ITextDocumentSyncHandler
     {
+        private const int CompletionTimeout = 5000;
+
         private readonly ILanguageServerFacade _languageServerFacade;
         private readonly WorkspaceService _workspaceService;
 
@@ -72,21 +75,21 @@ namespace MarineLang.LanguageServerImpl.Handlers
             return new TextDocumentAttributes(uri, "marinescript");
         }
 
-        public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken token)
+        public async Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken token)
         {
-            PublishValidateDiagnostics(request.ContentChanges.First().Text, request.TextDocument.Uri);
+            await PublishValidateDiagnostics(request.ContentChanges.First().Text, request.TextDocument.Uri, token);
             _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path,
                 request.ContentChanges.First().Text);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
-        public Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
         {
-            PublishValidateDiagnostics(request.TextDocument.Text, request.TextDocument.Uri);
+            await PublishValidateDiagnostics(request.TextDocument.Text, request.TextDocument.Uri, cancellationToken);
             _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path, request.TextDocument.Text);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
         public Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
@@ -94,35 +97,48 @@ namespace MarineLang.LanguageServerImpl.Handlers
             return Unit.Task;
         }
 
-        public Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
         {
-            PublishValidateDiagnostics(request.Text, request.TextDocument.Uri);
+            await PublishValidateDiagnostics(request.Text, request.TextDocument.Uri, cancellationToken);
             _workspaceService.UpdateMarineFileBuffer(request.TextDocument.Uri.Path,
                 request.Text);
 
-            return Unit.Task;
+            return Unit.Value;
         }
 
-        private void PublishValidateDiagnostics(string text, DocumentUri uri)
+        private async Task PublishValidateDiagnostics(string text, DocumentUri uri, CancellationToken cancellationToken)
         {
             _languageServerFacade.TextDocument.PublishDiagnostics(
-                new PublishDiagnosticsParams { Uri = uri, Diagnostics = Validate(text) }
+                new PublishDiagnosticsParams { Uri = uri, Diagnostics = await Validate(text, cancellationToken) }
             );
         }
 
-        private Container<Diagnostic> Validate(string text)
+        private async Task<Container<Diagnostic>> Validate(string text, CancellationToken cancellationToken)
         {
             var tokens = new LexicalAnalyzer().GetTokens(text);
             var result = new SyntaxAnalyzer().Parse(tokens);
 
             if (result.IsError)
             {
-                return
-                    new Container<Diagnostic>(result.parseErrorInfos.Select(e => new Diagnostic()
+                var container = Task.Run(() => new Container<Diagnostic>(
+                    result.parseErrorInfos.Select(e => new Diagnostic()
                     {
                         Range = ToRange(e.ErrorRangePosition),
                         Message = e.FullErrorMessage,
-                    }));
+                    })), cancellationToken);
+                var cancelTask = Task.Run(async () =>
+                {
+                    await Task.Delay(CompletionTimeout, cancellationToken);
+                    return new Container<Diagnostic>();
+                }, cancellationToken);
+
+                var task = await Task.WhenAny(container, cancelTask);
+                if (task.Status != TaskStatus.Canceled && task != container)
+                {
+                    _languageServerFacade.Window.ShowError("Parse timed out.");
+                }
+
+                return await task;
             }
 
             return new Container<Diagnostic>();
