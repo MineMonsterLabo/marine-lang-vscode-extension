@@ -466,7 +466,7 @@ namespace MarineLang.LanguageServerImpl.Services
 
         private bool Contains(IAst ast, Position position)
         {
-            return ast.Range.Contain(new Models.Position(position.Line + 1, position.Character + 1));
+            return ast.Range.Contain(new Models.Position(0, position.Line + 1, position.Character + 1));
         }
 
         private string ToSnakeCase(string str, bool isNotConvertFirstChar = false)
