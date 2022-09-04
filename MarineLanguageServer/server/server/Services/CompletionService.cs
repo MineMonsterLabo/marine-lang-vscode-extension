@@ -127,12 +127,29 @@ namespace MarineLang.LanguageServerImpl.Services
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
                                     }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
                                 }
                                 else if (currentType.Members.TryGetValue(upperName,
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
@@ -184,6 +201,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
                                     }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
                                     else
                                     {
                                         break;
@@ -193,7 +217,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
@@ -252,6 +282,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
                                     }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
                                     else
                                     {
                                         break;
@@ -261,7 +298,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
