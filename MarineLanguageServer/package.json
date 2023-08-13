@@ -5,13 +5,13 @@
 	"author": "MineMonsterLabo",
 	"publisher": "elipmoc",
 	"license": "MIT",
-	"version": "0.3.2+0000040017",
+	"version": "0.3.2+0000050063",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/MineMonsterLabo/marine-lang-vscode-extension"
 	},
 	"engines": {
-		"vscode": "^1.60.0"
+		"vscode": "^1.81.0"
 	},
 	"categories": [
 		"Other"
@@ -45,8 +45,12 @@
 		"watch": "tsc -watch -p ./client",
 		"package": "npm exec vsce package"
 	},
+	"dependencies": {
+		"@types/vscode": "~1.81.0",
+		"vscode-languageclient": "^8.1.0"
+	},
 	"devDependencies": {
-		"typescript": "^4.4.3",
-		"vsce": "^2.9.1"
+		"typescript": "^5.1.6",
+		"vsce": "^2.15.0"
 	}
 }
