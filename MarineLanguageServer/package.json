@@ -45,10 +45,6 @@
 		"watch": "tsc -watch -p ./client",
 		"package": "npm exec vsce package"
 	},
-	"dependencies": {
-		"@types/vscode": "~1.81.0",
-		"vscode-languageclient": "^8.1.0"
-	},
 	"devDependencies": {
 		"typescript": "^5.1.6",
 		"vsce": "^2.15.0"
