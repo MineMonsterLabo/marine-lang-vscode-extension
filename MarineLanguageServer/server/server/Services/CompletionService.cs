@@ -33,7 +33,8 @@ namespace MarineLang.LanguageServerImpl.Services
                         return list;
 
                     var lineBuffer = _workspaceService.GetMarineFileBufferForStrings(filePath)[position.Line];
-                    var tokens = new LexicalAnalyzer().GetTokens(lineBuffer.Remove(position.Character - 1, 1) + "{}");
+                    var tokens =
+                        new LexicalAnalyzer().GetTokens(lineBuffer.Remove(position.Character - 1, 1) + ".a() {}");
                     var result = new SyntaxAnalyzer().marineParser.ParseStatement(TokenInput.Create(tokens.ToArray()))
                         .Result;
                     ExprAst exprAst;
@@ -42,7 +43,8 @@ namespace MarineLang.LanguageServerImpl.Services
                         exprAst = HittingExpr(result.RawValue, new Position(0, position.Character - 1));
                         while (true)
                         {
-                            if (exprAst is VariableAst or InstanceFieldAst or FuncCallAst or InstanceFuncCallAst)
+                            if (exprAst is VariableAst or InstanceFieldAst or FuncCallAst or InstanceFuncCallAst
+                                or StaticFieldAst or StaticFuncCallAst)
                             {
                                 break;
                             }
@@ -63,6 +65,7 @@ namespace MarineLang.LanguageServerImpl.Services
 
                     var currentExpr = CreateAstParent(exprAst, new Position(0, position.Character - 1));
                     TypeDumpModel currentType = null;
+                    bool isStaticOnly = false;
                     while (currentExpr != null)
                     {
                         var name = GetNameExprAst(currentExpr.Current) ?? string.Empty;
@@ -78,6 +81,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                     currentType =
                                         methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else
                                 {
@@ -93,6 +97,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                         ((MethodDumpModel)memberDumpModel.First()).TypeName.GetTypeDumpModel(
                                             _workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else
                                 {
@@ -109,6 +114,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                 {
                                     currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else
                                 {
@@ -126,18 +132,39 @@ namespace MarineLang.LanguageServerImpl.Services
                                         currentType =
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else
+                                    {
+                                        break;
                                     }
                                 }
                                 else if (currentType.Members.TryGetValue(upperName,
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
                                                 .DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else
                                     {
@@ -161,11 +188,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                     currentType =
                                         methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
                                 {
                                     currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else
                                 {
@@ -183,6 +212,15 @@ namespace MarineLang.LanguageServerImpl.Services
                                         currentType =
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else
                                     {
@@ -193,12 +231,20 @@ namespace MarineLang.LanguageServerImpl.Services
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
                                                 .DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else if (first is MethodDumpModel memberDumpModel3)
                                     {
@@ -206,6 +252,7 @@ namespace MarineLang.LanguageServerImpl.Services
                                             memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
                                                 .DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else
                                     {
@@ -229,11 +276,13 @@ namespace MarineLang.LanguageServerImpl.Services
                                     currentType =
                                         methodModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else if (variables.TryGetValue(name, out TypeNameDumpModel typeName))
                                 {
                                     currentType = typeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                     currentExpr = currentExpr.Parent;
+                                    isStaticOnly = false;
                                 }
                                 else
                                 {
@@ -251,6 +300,15 @@ namespace MarineLang.LanguageServerImpl.Services
                                         currentType =
                                             fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else
                                     {
@@ -261,12 +319,20 @@ namespace MarineLang.LanguageServerImpl.Services
                                              out List<MemberDumpModel> memberDumpModel2))
                                 {
                                     var first = memberDumpModel2.First();
-                                    if (first is PropertyDumpModel propertyDumpModel)
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
                                     {
                                         currentType =
                                             propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
                                                 .DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else if (first is MethodDumpModel memberDumpModel3)
                                     {
@@ -274,6 +340,159 @@ namespace MarineLang.LanguageServerImpl.Services
                                             memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
                                                 .DumpModel);
                                         currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else if (currentExpr.Current is StaticFuncCallAst staticFuncCallAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var types = _workspaceService.DumpModel.StaticTypes;
+                                if (types.TryGetValue(staticFuncCallAst.ClassName, out TypeNameDumpModel typeNameModel))
+                                {
+                                    currentType = typeNameModel.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                    isStaticOnly = true;
+                                }
+                            }
+                            else
+                            {
+                                if (currentType.Members.TryGetValue(lowerName,
+                                        out List<MemberDumpModel> memberDumpModel))
+                                {
+                                    var first = memberDumpModel.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else if (currentType.Members.TryGetValue(upperName,
+                                             out List<MemberDumpModel> memberDumpModel2))
+                                {
+                                    var first = memberDumpModel2.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is MethodDumpModel memberDumpModel3)
+                                    {
+                                        currentType =
+                                            memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else if (currentExpr.Current is StaticFieldAst staticFieldAst)
+                        {
+                            if (currentType == null)
+                            {
+                                var types = _workspaceService.DumpModel.StaticTypes;
+                                if (types.TryGetValue(staticFieldAst.ClassName, out TypeNameDumpModel typeNameModel))
+                                {
+                                    currentType = typeNameModel.GetTypeDumpModel(_workspaceService.DumpModel);
+                                    currentExpr = currentExpr.Parent;
+                                    isStaticOnly = true;
+                                }
+                            }
+                            else
+                            {
+                                if (currentType.Members.TryGetValue(lowerName,
+                                        out List<MemberDumpModel> memberDumpModel))
+                                {
+                                    var first = memberDumpModel.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                else if (currentType.Members.TryGetValue(upperName,
+                                             out List<MemberDumpModel> memberDumpModel2))
+                                {
+                                    var first = memberDumpModel2.First();
+                                    if (first is FieldDumpModel fieldDumpModel)
+                                    {
+                                        currentType =
+                                            fieldDumpModel.TypeName.GetTypeDumpModel(_workspaceService.DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is PropertyDumpModel propertyDumpModel)
+                                    {
+                                        currentType =
+                                            propertyDumpModel.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
+                                    }
+                                    else if (first is MethodDumpModel memberDumpModel3)
+                                    {
+                                        currentType =
+                                            memberDumpModel3.TypeName.GetTypeDumpModel(_workspaceService
+                                                .DumpModel);
+                                        currentExpr = currentExpr.Parent;
+                                        isStaticOnly = false;
                                     }
                                     else
                                     {
@@ -289,7 +508,7 @@ namespace MarineLang.LanguageServerImpl.Services
                     }
 
                     if (currentType != null)
-                        list.AddRange(CreateTypeCompletionItems(currentType));
+                        list.AddRange(CreateTypeCompletionItems(currentType, isStaticOnly));
                 }
                 else
                 {
@@ -354,6 +573,10 @@ namespace MarineLang.LanguageServerImpl.Services
                 return GetNameExprAst(instanceFuncCallAst.instancefuncCallAst);
             if (exprAst is InstanceFieldAst instanceFieldAst)
                 return GetNameExprAst(instanceFieldAst.variableAst);
+            if (exprAst is StaticFuncCallAst staticFuncCallAst)
+                return GetNameExprAst(staticFuncCallAst.funcCallAst);
+            if (exprAst is StaticFieldAst staticFieldAst)
+                return GetNameExprAst(staticFieldAst.variableAst);
 
             return null;
         }
@@ -380,6 +603,14 @@ namespace MarineLang.LanguageServerImpl.Services
                 {
                     current = new ExprAstParent(current, fieldAst.instanceExpr);
                     exprAst = fieldAst.instanceExpr;
+                }
+                else if (exprAst is StaticFuncCallAst staticFuncCallAst)
+                {
+                    return new ExprAstParent(current, staticFuncCallAst);
+                }
+                else if (exprAst is StaticFieldAst staticFieldAst)
+                {
+                    return new ExprAstParent(current, staticFieldAst);
                 }
                 else
                 {
@@ -415,24 +646,24 @@ namespace MarineLang.LanguageServerImpl.Services
             };
         }
 
-        private IEnumerable<CompletionItem> CreateTypeCompletionItems(TypeDumpModel typeDumpModel)
+        private IEnumerable<CompletionItem> CreateTypeCompletionItems(TypeDumpModel typeDumpModel, bool isStaticOnly)
         {
             foreach (var pair in typeDumpModel.Members)
             {
                 var first = pair.Value.First();
                 switch (first)
                 {
-                    case FieldDumpModel fieldDumpModel:
+                    case FieldDumpModel fieldDumpModel when !isStaticOnly || fieldDumpModel.IsStatic:
                         yield return CreateCompletionItem(ToSnakeCase(pair.Key, true), 0,
                             fieldDumpModel.TypeName.Name, CompletionItemKind.Field);
                         break;
 
-                    case PropertyDumpModel propertyDumpModel:
+                    case PropertyDumpModel propertyDumpModel when !isStaticOnly || propertyDumpModel.IsStatic:
                         yield return CreateCompletionItem(ToSnakeCase(pair.Key, true), 1,
                             propertyDumpModel.TypeName.Name, CompletionItemKind.Property);
                         break;
 
-                    case MethodDumpModel memberDumpModel:
+                    case MethodDumpModel memberDumpModel when !isStaticOnly || memberDumpModel.IsStatic:
                         yield return CreateCompletionItem(ToSnakeCase(pair.Key), 2,
                             BuildDoc(pair.Key, memberDumpModel), CompletionItemKind.Method);
                         break;
@@ -466,7 +697,7 @@ namespace MarineLang.LanguageServerImpl.Services
 
         private bool Contains(IAst ast, Position position)
         {
-            return ast.Range.Contain(new Models.Position(position.Line + 1, position.Character + 1));
+            return ast.Range.Contain(new Models.Position(0, position.Line + 1, position.Character + 1));
         }
 
         private string ToSnakeCase(string str, bool isNotConvertFirstChar = false)
